@@ -359,8 +359,8 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-08T23:50:22+08:00">
-                2020/07/08
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-10T17:56:47+08:00">
+                2020/07/10
               </time>
             
           </span>
@@ -398,7 +398,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  186 字
+                  571 字
                 </span>
               
 
@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1 分钟
+                  2 分钟
                 </span>
               
             </div>
@@ -437,9 +437,21 @@
       
         
           
-            <h3 id="JVM-介绍"><a href="#JVM-介绍" class="headerlink" title="JVM 介绍"></a>JVM 介绍</h3><p>JVM是Java Virtual Machine（Java<a href="https://baike.baidu.com/item/虚拟机" target="_blank" rel="noopener">虚拟机</a>）的缩写，JVM是一种用于计算设备的规范，它是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。</p>
-<p>引入Java语言虚拟机后，Java语言在不同平台上运行时不需要重新编译。Java语言使用Java虚拟机屏蔽了与具体平台相关的信息，使得Java语言<a href="https://baike.baidu.com/item/编译程序/8290180" target="_blank" rel="noopener">编译程序</a>只需生成在Java虚拟机上运行的目标代码（<a href="https://baike.baidu.com/item/字节码/9953683" target="_blank" rel="noopener">字节码</a>），就可以在多种平台上不加修改地运行。（摘自百度百科）</p>
-<h3 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h3><h5 id="PC-计数器"><a href="#PC-计数器" class="headerlink" title="PC 计数器"></a>PC 计数器</h5><h5 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h5><h5 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h5><h5 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h5><h5 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h5>
+            <h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。</p>
+<p>引入Java语言虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在 Java 虚拟机上运行的目标代码（字节码），就可以在多种平台上不加修改地运行。（摘自<a href="https://baike.baidu.com/item/JVM/2902369?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+<h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
+<p>学习 JVM，可以围绕四个部分进行：</p>
+<ul>
+<li>类的加载机制</li>
+<li>内存模型</li>
+<li>GC 算法、垃圾回收</li>
+<li>GC 分析、命令调优</li>
+</ul>
+<p>本篇着重于 JVM 的内存结构讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM(OutOfMemoryError) 到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
+<p>在理解了 JVM 的内存模型后，我们就可以知道，平常我们编写的 Java Class 文件是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
+<h2 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h2><p>Java 程序的开发，并不需要像 C/C++ 开发一样时刻关注内存的释放，而是全权交由 JVM 去管理，JVM 内存模型主要是指运行时内存模型，分为线程私有和线程共享数据区两大类，线程私有包括：程序计数器、虚拟机栈、本地方法栈；线程共享数据区包括：Java 堆（Heap）、方法区（包含运行时常量池）。</p>
+<p><img src="https://github.com/yudi-corgi/yudi-corgi.github.io/tree/master/images/jvmMemoryModel.jpg" alt="JVM 内存模型"></p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3>
           
         
       
@@ -784,7 +796,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">259</span>
+    <span title="Site words total count">644</span>
   
 </div>
 
