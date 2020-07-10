@@ -123,13 +123,13 @@
 <meta property="og:url" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/index.html">
 <meta property="og:site_name" content="YUDI&#39;s 个人博客">
 <meta property="og:description" content="什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。 引入Java语言虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在">
-<meta property="og:image" content="https://github.com/yudi-corgi/yudi-corgi.github.io/tree/master/images/jvmMemoryModel.jpg">
+<meta property="og:image" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg">
 <meta property="article:published_time" content="2020-07-08T09:56:43.000Z">
-<meta property="article:modified_time" content="2020-07-10T09:56:47.219Z">
+<meta property="article:modified_time" content="2020-07-10T10:42:00.519Z">
 <meta property="article:author" content="YUDI-Corgi">
 <meta property="article:tag" content="Java 虚拟机">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://github.com/yudi-corgi/yudi-corgi.github.io/tree/master/images/jvmMemoryModel.jpg">
+<meta name="twitter:image" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg">
 
 
 
@@ -357,7 +357,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-10T17:56:47+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-10T18:42:00+08:00">
                 2020/07/10
               </time>
             
@@ -451,7 +451,7 @@
 <p>本篇着重于 JVM 的内存结构讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM(OutOfMemoryError) 到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
 <p>在理解了 JVM 的内存模型后，我们就可以知道，平常我们编写的 Java Class 文件是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
 <h2 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h2><p>Java 程序的开发，并不需要像 C/C++ 开发一样时刻关注内存的释放，而是全权交由 JVM 去管理，JVM 内存模型主要是指运行时内存模型，分为线程私有和线程共享数据区两大类，线程私有包括：程序计数器、虚拟机栈、本地方法栈；线程共享数据区包括：Java 堆（Heap）、方法区（包含运行时常量池）。</p>
-<p><img src="https://github.com/yudi-corgi/yudi-corgi.github.io/tree/master/images/jvmMemoryModel.jpg" alt="JVM 内存模型"></p>
+<p><img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg" alt="JVM 内存模型"></p>
 <h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3>
       
     </div>
