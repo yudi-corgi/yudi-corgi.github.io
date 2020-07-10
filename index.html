@@ -359,7 +359,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-11T00:53:57+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-11T01:04:25+08:00">
                 2020/07/11
               </time>
             
@@ -447,8 +447,8 @@
 <li>GC 算法、垃圾回收</li>
 <li>GC 分析、命令调优</li>
 </ul>
-<p>本篇着重于 JVM 的内存结构讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM（OutOfMemoryError）异常到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
-<p>在理解了 JVM 的内存模型后，我们就可以知道，平常编写的 Java 文件信息是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
+<p>本篇着重于 JVM 内存模型的讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM（OutOfMemoryError）异常到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
+<p>在理解了 JVM 内存模型后，我们就可以知道，平常编写的 Java 文件信息是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
 <h2 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h2><p>Java 程序的开发，并不需要像 C/C++ 开发一样时刻关注内存的释放，而是全权交由 JVM 去管理，JVM 内存模型主要是指运行时内存模型，分为 <strong>线程私有</strong> 和 <strong>线程共享</strong> 数据区两大类：</p>
 <ul>
 <li>线程私有：程序计数器、虚拟机栈、本地方法栈；</li>
