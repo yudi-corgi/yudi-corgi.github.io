@@ -349,7 +349,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-15T19:56:08+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-15T19:58:39+08:00">
                 2020/07/15
               </time>
             
@@ -474,7 +474,7 @@
 <ul>
 <li>创建类的实例，也就是 new 的方式</li>
 <li>访问某个类或接口的静态变量，或者对该静态变量赋值</li>
-<li>调用类的静态方法反射（如 Class.forName(“com.Test”)）</li>
+<li>调用类的静态方法反射（如 <code>Class.forName(&quot;com.Test&quot;)</code>）</li>
 <li>初始化某个类的子类，则其父类也会被初始化</li>
 <li>Java 虚拟机启动时被标明为启动类的类，直接使用 java.exe 命令来运行某个主类</li>
 </ul>
@@ -483,8 +483,8 @@
 <li>通过子类引用父类的静态字段，只会触发父类的初始化，而子类不会初始化</li>
 <li>定义数组对象，不会触发该类的初始化</li>
 <li>常量在编译期间会存入调用类的常量池，但本质上并没有直接引用定义常量的类，所以也不会触发初始化</li>
-<li>通过类名获取 Class 对象（Test.Class），不会触发</li>
-<li>通过 Class.forName 加载指定类时，如果指定参数 initialize 为 false ，不会触发类初 始化，因为该参数是告诉虚拟机是否要对类进行初始化</li>
+<li>通过类名获取 Class 对象（<code>Test.Class</code>），不会触发</li>
+<li>通过 <code>Class.forName()</code> 加载指定类时，如果指定参数 <code>initialize</code> 为 false ，不会触发类初 始化，因为该参数是告诉虚拟机是否要对类进行初始化</li>
 </ul>
 <h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a><span id="jump">类加载器</span></h2><p>类加载经过 <strong>初始化</strong> 这一步后，就已经可以正常使用，这个过程走下来，其实在最初的 <strong>加载</strong> 这一步开发者可以控制外，其它都是由 JVM 自行完成。而控制加载过程，则需要使用到类加载器。</p>
 <p>我们先简单了解下 JVM 提供的三种类加载器，如下图所示：</p>
