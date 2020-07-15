@@ -127,7 +127,7 @@
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/15/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.jpg">
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/15/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8.jpg">
 <meta property="article:published_time" content="2020-07-15T07:50:48.000Z">
-<meta property="article:modified_time" content="2020-07-15T11:38:04.409Z">
+<meta property="article:modified_time" content="2020-07-15T11:43:13.120Z">
 <meta property="article:author" content="YUDI-Corgi">
 <meta property="article:tag" content="Java 虚拟机">
 <meta name="twitter:card" content="summary">
@@ -349,7 +349,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-15T19:38:04+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-15T19:43:13+08:00">
                 2020/07/15
               </time>
             
@@ -430,7 +430,7 @@
 <p>我们可以简单看张图理解下：</p>
 <img src="/2020/07/15/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/jvm类加载.jpg" alt="JVM类加载" align="center">
 
-<p>从图片我们就可以知道，类加载完毕后，类的数据全部都存放在 JVM 的方法区，堆区只是提供了一个实例对象去调用相应的对象数据，所以这也是我们实例化一个对象(new)时，对象存放在堆区的原因。</p>
+<p>从图片我们知道，类加载完毕后，类的数据全部都存放在 JVM 的方法区，堆区只是提供了一个入口去调用相应的对象数据，比如 <code>Class.newInstance()</code>，所以到这里，我们也能理解为什么 Java 对象都存放在堆区的原因。</p>
 <p>类加载器并不需要等到某个类被“首次主动使用”时再加载它，JVM 规范允许类加载器在预料某个类将要被使用时就预先加载它，如果在预先加载的过程中遇到了 <code>.class</code> 文件缺失或存在错误，类加载器必须在程序首次主动使用该类时才报告错误（LinkageError 错误），如果这个类一直没有被程序主动使用，那么类加载器就不会报告错误。（此段引用于 <a href="http://www.ityouknow.com/jvm/2017/08/19/class-loading-principle.html" target="_blank" rel="noopener">纯洁的微笑-Java 类加载机制</a>）</p>
 <h2 id="类的加载过程"><a href="#类的加载过程" class="headerlink" title="类的加载过程"></a>类的加载过程</h2><p>如下图所示，JVM 类加载主要经历五个部分：加载、连接、初始化、使用、卸载。接下来一一讲解每个部分都做了什么。</p>
 <p><img src="/2020/07/15/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.jpg" alt="类加载过程"></p>
