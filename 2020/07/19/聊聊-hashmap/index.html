@@ -126,7 +126,7 @@
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap%E7%B1%BB%E5%9B%BE.png">
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap%E7%BB%93%E6%9E%84.jpg">
 <meta property="article:published_time" content="2020-07-18T17:22:31.000Z">
-<meta property="article:modified_time" content="2020-07-18T17:41:44.350Z">
+<meta property="article:modified_time" content="2020-07-18T17:42:57.395Z">
 <meta property="article:author" content="YUDI-Corgi">
 <meta property="article:tag" content="HashMap">
 <meta name="twitter:card" content="summary">
@@ -348,7 +348,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-19T01:41:44+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-19T01:42:57+08:00">
                 2020/07/19
               </time>
             
@@ -506,7 +506,7 @@
 <p>Hashtable 的<code>key</code>不能为空，是因为 <code>put()</code>方法里作了判断，为空直接抛出 NPE 异常；而它之所以是线程安全，通过源码可知是因为内部方法都加上了 <code>Synchronize</code>同步锁，但<code>Synchronize</code>是重量级锁，容易引起线程上下文切换而带来线程调度的开销，因此在多线程并发应用中使用是比较少的，推荐使用 ConcurrentHashMap，其采用的是分段锁，效率比 Hashtable 要高出许多（关于锁机制的问题想了解的童鞋们可以自己搜索相关资料学习下）。</p>
 <h3 id="HashMap-死链问题"><a href="#HashMap-死链问题" class="headerlink" title="HashMap 死链问题"></a>HashMap 死链问题</h3><p>HashMap 死链是指在 Java 并发情况下，多线程操作 HashMap 产生 Race Condition(竞用条件)，而此时 HashMap 刚好需要扩容，导致旧数据复制到新数组产生死循环。简单讲就是链表中 A(Entry) 的 next 属性指向 B(Entry)，而 B 的 next 属性又指向 A。</p>
 <p>关于死链具体情况，在<a href="https://coolshell.cn/articles/9606.html" target="_blank" rel="noopener"><font color="blue">左耳朵耗子-陈皓的《疫苗：Java HashMap的死循环》</font></a>这篇里讲解的非常清楚，很清晰易懂，童鞋们可以看看了解，并且死链情况在 Java1.8 中已经得到解决，在 1.8 版本开始，HashMap 的结构就变为了 <strong>数组+链表+红黑树</strong>，后续新篇章也会对 1.8 版本的 HashMap 作下介绍讲解。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后来概括下 HashMap 的工作原理：当通过 <code>put()</code> 方法存值时会调用 <code>key.hashCode()</code> 获取哈希值从而获取数组下标，并将<code>Key-Value</code>作为 Entry&lt;K,V&gt; 对象进行存储，调用<code>get()</code>方法时同样计算<code>key</code> 的哈希值然后获取数组下标，然后通过 <code>key.equals()</code>判断值是否相同，最终返回结果。当存值时若元素数量大于阈值<code>threshold</code>则进行扩容，大小为原来的2倍。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后来概括下 HashMap 的工作原理：当通过 <code>put()</code> 方法存值时会调用 <code>key.hashCode()</code> 计算哈希值从而获取数组下标，并将<code>Key-Value</code>作为 Entry&lt;K,V&gt; 对象进行存储，调用<code>get()</code>方法时同样计算<code>key</code>的哈希值然后获取数组下标，然后通过 <code>key.equals()</code>判断值是否相同，最终返回结果。当存值时若元素数量大于阈值<code>threshold</code>则进行扩容，大小为原来的2倍。</p>
 <p>在日常开发中，HashMap 数据结构使用是非常频繁的，而且也是面试经典问题，对于 HashMap 的理解掌握，至关重要！</p>
 
       
