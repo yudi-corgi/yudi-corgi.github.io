@@ -66,6 +66,12 @@
   
 
   
+    
+      
+    
+
+    
+  
 
   
     
@@ -78,7 +84,7 @@
   
     
     
-    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
   
 
 
@@ -138,7 +144,7 @@
     root: '/',
     scheme: 'Gemini',
     version: '5.1.4',
-    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
     fancybox: true,
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
@@ -450,7 +456,7 @@
       
         
           
-          前言Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 Key-Value键值对映射的接口，即一个 Key对应一个Value。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的数据存储与使用。而本篇的主角是 HashMap，让我们来粗浅的聊聊它吧。（注意：本篇 HashMap
+          前言Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 Key-Value键值对映射的接口，即一个 Key对应一个Value。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -552,7 +558,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-19T18:23:24+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2020-07-19T19:33:00+08:00">
                 2020/07/19
               </time>
             
@@ -620,7 +626,7 @@
         
           
           在 JVM-内存模型 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。
-什么是类的加载类的加载指的是将类的 .class 文件中的二进制数据读入到内存中，将其放在 JVM 运行时数据区的方法区内，然后在堆区创建一个java.lang.Class对象，用来封装类
+什么是类的加载类的加载指的是将类的 .class 文件中的二进制数据读入到内存中，将其放
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -790,7 +796,7 @@
         
           
           什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。
-引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在 
+引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Ja
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -880,7 +886,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/archives/%7C%7C%20archive">
+                <a href="/archives/">
               
                   <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">日志</span>
@@ -949,19 +955,10 @@
   <span class="author" itemprop="copyrightHolder">YUDI-Corgi</span>
 
   
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item-icon">
-      <i class="fa fa-area-chart"></i>
-    </span>
-    
-      <span class="post-meta-item-text">Site words total count&#58;</span>
-    
-    <span title="Site words total count">8.1k</span>
-  
 </div>
 
 
-  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+  <div class="powered-by">  玉帝专属</div>
 
 
 
@@ -969,7 +966,7 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+  <div class="theme-info">技术原创博客 &mdash; <a class="theme-link" target="_blank" href="https://yudi-corgi.github.io/">YUDI-Corgi</a> </div>
 
 
 
@@ -997,6 +994,8 @@
     
       <div class="back-to-top">
         <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
         
       </div>
     
