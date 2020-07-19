@@ -94,7 +94,7 @@
   <entry>
     <title>JVM-类加载机制</title>
     <url>/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<p>在 <a href="https://yudi-corgi.github.io/2020/07/08/JVM-内存模型/">JVM-内存模型</a> 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。</p>
+    <content><![CDATA[<p>在 <a href="https://yudi-corgi.github.io/2020/07/08/JVM-内存模型/"><font color="blue">JVM-内存模型</font></a> 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。</p>
 <h2 id="什么是类的加载"><a href="#什么是类的加载" class="headerlink" title="什么是类的加载"></a>什么是类的加载</h2><p>类的加载指的是将类的 <code>.class</code> 文件中的二进制数据读入到内存中，将其放在 JVM 运行时数据区的方法区内，然后在堆区创建一个<code>java.lang.Class</code>对象，用来封装类在方法区内的数据结构。类的加载的最终结果是位于堆区中的 Class 对象，Class 对象封装了类在方法区内的数据结构，并提供了访问方法区内的数据结构的接口。</p>
 <p>我们可以简单看张图理解下：</p>
 <img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/jvm类加载.jpg" alt="JVM类加载" align="center">
