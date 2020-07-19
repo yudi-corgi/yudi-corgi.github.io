@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>JVM-内存模型</title>
-    <url>/2020/07/08/JVM-memory-model/</url>
+    <url>/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</url>
     <content><![CDATA[<h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。</p>
 <p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在 Java 虚拟机上运行的目标代码（字节码），就可以在多种平台上不加修改地运行。（摘自<a href="https://baike.baidu.com/item/JVM/2902369?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
 <h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
@@ -22,7 +22,7 @@
 </ul>
 <p>线程私有数据区域生命周期与线程相同，依赖用户线程的启动（结束）而创建（销毁）；<br>线程共享数据区域则随虚拟机的启动（关闭）而创建（销毁）。</p>
 <p>JVM 内存模型结构图（<font color="green">绿色</font>共享，<font color="CC6600">橙色</font>私有）：</p>
-<img src="/2020/07/08/JVM-memory-model/jvmMemoryModel.jpg" width="800" height="450" alt="JVM内存结构" align="true">
+<img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg" width="800" height="450" alt="JVM内存结构" align="true">
 
 <h3 id="程序计数器（私有）"><a href="#程序计数器（私有）" class="headerlink" title="程序计数器（私有）"></a>程序计数器（私有）</h3><p>程序计数器是一块较小的内存空间，是当前线程所执行的字节码的行号指示器，每个线程都有一个独立的计数器，互不影响。通过该计数器，JVM 解释器就知道下一步要执行的字节码指令位置，而分支、循环、跳转、异常处理、线程恢复等基础功能也都依赖于该计数器来实现。</p>
 <p>如果线程正在执行的是一个 Java 方法，则计数器记录的是正在执行的虚拟机字节码指令的地址，若为 Native 方法，则计数器的值为空（Undefined），并且该内存区域是唯一一个在虚拟机中没有规定任何 OOM 异常情况的区域。</p>
@@ -65,7 +65,7 @@
 </li>
 </ul>
 <h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>关于堆、栈内存的大小设置，可以通过 IDE（IDEA、Eclipse）或 Web 容器（Tomcat ）等来配置，可通过下图来了解参数所控制的区域分别是什么。</p>
-<p><img src="/2020/07/08/JVM-memory-model/Heap.png" alt="堆栈参数设置参照图"></p>
+<p><img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/Heap.png" alt="堆栈参数设置参照图"></p>
 <p>参数控制：</p>
 <ul>
 <li>-Xms：设置堆的最小空间大小；</li>
@@ -92,17 +92,106 @@
       </tags>
   </entry>
   <entry>
+    <title>JVM-类加载机制</title>
+    <url>/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<p>在 <a href="https://yudi-corgi.github.io/2020/07/08/JVM-内存模型/">JVM-内存模型</a> 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。</p>
+<h2 id="什么是类的加载"><a href="#什么是类的加载" class="headerlink" title="什么是类的加载"></a>什么是类的加载</h2><p>类的加载指的是将类的 <code>.class</code> 文件中的二进制数据读入到内存中，将其放在 JVM 运行时数据区的方法区内，然后在堆区创建一个<code>java.lang.Class</code>对象，用来封装类在方法区内的数据结构。类的加载的最终结果是位于堆区中的 Class 对象，Class 对象封装了类在方法区内的数据结构，并提供了访问方法区内的数据结构的接口。</p>
+<p>我们可以简单看张图理解下：</p>
+<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/jvm类加载.jpg" alt="JVM类加载" align="center">
+
+<p>从图片我们知道，类加载完毕后，类的数据全部都存放在 JVM 的方法区，堆区只是提供了一个入口去调用相应的对象数据，比如 <code>Class.newInstance()</code>，所以到这里，我们也能理解为什么 Java 对象都存放在堆区的原因。</p>
+<p>类加载器并不需要等到某个类被“首次主动使用”时再加载它，JVM 规范允许类加载器在预料某个类将要被使用时就预先加载它，如果在预先加载的过程中遇到了 <code>.class</code> 文件缺失或存在错误，类加载器必须在程序首次主动使用该类时才报告错误（LinkageError 错误），如果这个类一直没有被程序主动使用，那么类加载器就不会报告错误。（此段引用于 <a href="http://www.ityouknow.com/jvm/2017/08/19/class-loading-principle.html" target="_blank" rel="noopener">纯洁的微笑-Java 类加载机制</a>）</p>
+<h2 id="类的加载过程"><a href="#类的加载过程" class="headerlink" title="类的加载过程"></a>类的加载过程</h2><p>如下图所示，JVM 类加载主要经历五个部分：加载、连接、初始化、使用、卸载。接下来一一讲解每个部分都做了什么。</p>
+<p><img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.jpg" alt="类加载过程"></p>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>加载是类加载过程的第一个阶段，主要是查找并加载类的二进制数据，而这一阶段也就会在堆区生成一个 <code>java.lang.Class</code> 对象，作为入口用于访问该对象在方法区里的数据结构。而且这一步也是可控的，我们可以使用默认的类加载器，也可以自定义类加载器对 Java 文件进行加载（关于 <a href="#jump">类加载器</a> 👈下面有做简单介绍）。</p>
+<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>连接细化分下来，其实有三步，分别为以下三个部分：</p>
+<h4 id="验证：确保被加载的类的正确性"><a href="#验证：确保被加载的类的正确性" class="headerlink" title="验证：确保被加载的类的正确性"></a>验证：确保被加载的类的正确性</h4><p>这是连接的第一步，判断当前 Class 文件的字节流信息是否符合当前 JVM 规范要求，大致会进行以下四个部分的验证：</p>
+<ul>
+<li>文件格式验证：验证字节流是否符合 Class 文件格式的规范</li>
+<li>元数据验证：对字节码描述的信息进行语义分析，以保证其描述的信息符合 Java 语言规范的要求</li>
+<li>字节码验证：通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的</li>
+<li>符号引用验证：确保”解析”动作能正确执行</li>
+</ul>
+<h4 id="准备：为类的静态变量分配内存，并将其初始化为默认值"><a href="#准备：为类的静态变量分配内存，并将其初始化为默认值" class="headerlink" title="准备：为类的静态变量分配内存，并将其初始化为默认值"></a>准备：为类的静态变量分配内存，并将其初始化为默认值</h4><p>这一步主要是在方法区中为类变量分配内存，并初始化类变量的值。</p>
+<p>比如声明如下，<code>value</code> 的值在准备阶段会被初始化为 0，而不是 80，即数据类型的默认初始值，实际值的初始化会在 <strong>初始化</strong> 阶段（下面会讲到）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">80</span>;</span><br></pre></td></tr></table></figure>
+
+<p>但如果是下面的声明方式，则会直接赋值为 8080，在编译阶段会为 <code>value</code> 生成 ConstantValue 属性，并在准备阶段赋值为 8080：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> value = <span class="number">8080</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="解析：把常量池内的符号引用转换为直接引用"><a href="#解析：把常量池内的符号引用转换为直接引用" class="headerlink" title="解析：把常量池内的符号引用转换为直接引用"></a>解析：把常量池内的符号引用转换为直接引用</h4><p>主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符七类符号引用，符号引用类型常见如下：</p>
+<ul>
+<li>CONSTANT_Class_info</li>
+<li>CONSTANT_Field_info</li>
+<li>CONSTANT_Method_info</li>
+</ul>
+<p><strong>符号引用</strong>：一组符号来描述目标，可以是任何字面量，它与虚拟机实现的布局无关，引用的目标并不一定要已经加载到内存中。各种虚拟机实现的内存布局可以各不相同，但是它们能接受的符号引用必须是一致的，因为符号引用的字面量形式明确定义在 Java 虚拟机规范的 Class 文件格式中。</p>
+<p><strong>直接引用</strong>：就是直接指向目标的指针、相对偏移量或一个间接定位到目标的句柄，当有了直接引用，就说明引用的目标在内存已经存在。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>为类的静态变量赋予正确的初始值，JVM 负责对类进行初始化，主要对类变量进行初始化，Java 中为类变量进行初始值设定有两种方式：(1) 声明类变量时指定值；(2) 在静态代码块赋值。</p>
+<p><strong>初始化的步骤如下</strong>：</p>
+<ol>
+<li>假如这个类还没有被加载和连接，则程序先加载并连接该类</li>
+<li>假如该类的直接父类还没有被初始化，则先初始化其直接父类</li>
+<li>假如类中有初始化语句，则系统依次执行这些初始化语句</li>
+</ol>
+<p>类初始化其实是执行类构造器方法的过程，编译器会自动收集类中的类变量赋值操作和静态代码块的语句合并而成，并且 JVM 会保证子构造器方法执行前，父类构造器已经执行完毕。如果一个类中既没有类变量也没有静态代码块，那么编译器可以不为这个类生成构造器方法。</p>
+<p><strong>而初始化只有在对类的主动使用时才会触发，触发方式大概有以下几种</strong>：</p>
+<ul>
+<li>创建类的实例，也就是 new 的方式</li>
+<li>访问某个类或接口的静态变量，或者对该静态变量赋值</li>
+<li>调用类的静态方法反射（如 <code>Class.forName(&quot;com.Test&quot;)</code>）</li>
+<li>初始化某个类的子类，则其父类也会被初始化</li>
+<li>Java 虚拟机启动时被标明为启动类的类，直接使用 java.exe 命令来运行某个主类</li>
+</ul>
+<p><strong>不会触发类初始化的情况如下</strong>：</p>
+<ul>
+<li>通过子类引用父类的静态字段，只会触发父类的初始化，而子类不会初始化</li>
+<li>定义数组对象，不会触发该类的初始化</li>
+<li>常量在编译期间会存入调用类的常量池，但本质上并没有直接引用定义常量的类，所以也不会触发初始化</li>
+<li>通过类名获取 Class 对象（<code>Test.Class</code>），不会触发</li>
+<li>通过 <code>Class.forName()</code> 加载指定类时，如果指定参数 <code>initialize</code> 为 false ，不会触发类初 始化，因为该参数是告诉虚拟机是否要对类进行初始化</li>
+</ul>
+<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a><span id="jump">类加载器</span></h2><p>类加载经过 <strong>初始化</strong> 这一步后，就已经可以正常使用，这个过程走下来，其实在最初的 <strong>加载</strong> 这一步开发者可以控制外，其它都是由 JVM 自行完成。而控制加载过程，则需要使用到类加载器。</p>
+<p>我们先简单了解下 JVM 提供的三种类加载器，如下图所示：</p>
+<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/类加载器.jpg" width="400" height="300" align="center">
+
+<ul>
+<li><strong>启动类加载器(Bootstrap ClassLoader)</strong> ：负责加载 JAVA_HOME\lib 目录中的，或通过 -Xbootclasspath 参数指定路径中的，且被 虚拟机认可（按文件名识别，如 rt.jar）的类。</li>
+<li><strong>扩展类加载器(Extension ClassLoader)</strong> ：负责加载 JAVA_HOME\lib\ext 目录中的，或通过 java.ext.dirs 系统变量指定路径中的类库。</li>
+<li><strong>应用程序类加载器(Application ClassLoader）</strong>：负责加载用户路径（classpath）上的类库。</li>
+</ul>
+<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>在上面类加器图中我们可以看到，当一个类加载器收到类加载任务，会先交给其父类加载器去完成，因此最终加载任务都会传递到顶层的启动类加载器，只有当父类加载器无法完成加载任务时，才会尝试执行加载任务。这样子的好处是保证了使用不同的类加载器最终得到的都是同样一个 Object 对象。</p>
+<p>而类加载器存在以下机制：</p>
+<ul>
+<li><strong>全盘负责</strong>：当一个类加载器负责加载某个 Class 时，该 Class 所依赖的和引用的其他 Class 也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。</li>
+<li><strong>父类委托</strong>：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。</li>
+<li><strong>缓存机制</strong>：缓存机制将会保证所有加载过的 Class 都会被缓存，当程序中需要使用某个 Class 时，类加载器先从缓存区寻找该 Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成 Class 对象，存入缓存区。这就是为什么修改了 Class 后，必须重启 JVM，程序的修改才会生效。</li>
+</ul>
+<h3 id="自定义类加载器"><a href="#自定义类加载器" class="headerlink" title="自定义类加载器"></a>自定义类加载器</h3><p>当然，如果有需要，我们也可以自定义类加载器，只要 <strong>继承 ClassLoader 并重写其 loadClass() 方法</strong>，然后编写加载的具体逻辑代码即可。但这里有个要注意的点，如果直接重写 <strong>loadClass()</strong> 方法，有可能会破坏原本的双亲委派模型哦，具体如何避免该问题，就得查看浏览下 <strong>loadClass()</strong> 方法的源码了，在兴趣的伙伴们可以去看看哦。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇主要讲解 JVM 类加载机制，意在让读者明白 Java 文件编写后 JVM 是如何处理并正确使用，并理解类加载器的执行机制。当然本篇并不算全面细致的讲解，也有忽略的细节，如 <strong>连接-验证</strong> 步骤若是反复验证影响了加载效率该如何做，启动类加载器无法被 Java 程序直接引用等问题。</p>
+<p>但事无巨细，很多问题都是在某些情况下触发，都是要读者们在实际应用中去注意、发现并解决这些问题，久而久之，不仅问题解决了，还能更深入的理解其核心原理。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p>《深入理解Java虚拟机》第7章 / 周志明 / 机械工业出版社</p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>Java 虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>聊聊 HashMap</title>
-    <url>/2020/07/19/hashmap-basics/</url>
+    <url>/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 <code>Key-Value</code>键值对映射的接口，即一个 <code>Key</code>对应一个<code>Value</code>。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的数据存储与使用。而本篇的主角是 HashMap，让我们来粗浅的聊聊它吧。（注意：本篇 HashMap 的源码和原理讲解全部基于 JDK1.7）</p>
 <h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><p>HashMap 是基于哈希表(Hashtable)的 Map 实现类，以<code>Key-Value</code>形式保存数据，<code>Key</code>唯一，<code>Value</code>可重复，并采用 Hash 算法确定<code>Key-Value</code>的存储位置从而保证其进行数据快速存取。类图如下：</p>
-<img src="/2020/07/19/hashmap-basics/HashMap类图.png" width="500">
+<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap类图.png" width="500">
 
 <h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p>HashMap 的底层结构是 <strong>数组+链表</strong>，是通过计算<code>key</code>的 <code>hash</code> 值来确定数组下标位置，然后将<code>key</code>和<code>value</code>作为 Entry&lt;K,V&gt; 对象进行存储。这里需要注意，是作为 <strong>Entry&lt;K,V&gt;</strong> 对象存储，而不是通过 <code>key</code>确定数组下标后直接存放值。Entry&lt;K,V&gt; 是 Map 的内部接口，本质上是一个映射(键值对)，HashMap 类中对它有一个静态实现，如下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Entry&lt;K,V&gt; next;  <span class="comment">//链表节点中的下一个 Entry&lt;K,V&gt; 对象</span></span><br><span class="line">    <span class="keyword">int</span> hash;         <span class="comment">//当前 Entry 对象的 hash 值</span></span><br><span class="line">    <span class="comment">//构造函数</span></span><br><span class="line">    Entry(<span class="keyword">int</span> h, K k, V v, Entry&lt;K,V&gt; n) &#123;</span><br><span class="line">        value = v;</span><br><span class="line">        next = n;</span><br><span class="line">        key = k;</span><br><span class="line">        hash = h;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//其它代码省略 ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>从源码可以看出，Entry&lt;K,V&gt; 对象保存了<code>key</code>、<code>value</code>、<code>hash值</code>，还保存了当前 Entry&lt;K,V&gt; 对象的下一个 Entry&lt;K,V&gt; 对象：<code>Entry&lt;K,V&gt; next</code>。这也是为什么 HasHMap 结构是数组+链表，数组其实就是 Entry&lt;K,V&gt; 类型数组，而链表则是单向的，每个节点都是一个 Entry&lt;K,V&gt; 对象，并保存了下一个 Entry&lt;K,V&gt; 节点的数据，通过一张图来简单理解下：</p>
-<img src="/2020/07/19/hashmap-basics/HashMap结构.jpg" width="600" height="400">
+<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap结构.jpg" width="600" height="400">
 
 <h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>HashMap 内部定义的几个主要属性如下：</p>
 <ul>
