@@ -123,16 +123,16 @@
 
 
 
-<meta name="description" content="什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。 引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在">
+<meta name="description" content="什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。 引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM-内存模型">
 <meta property="og:url" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/index.html">
 <meta property="og:site_name" content="思想家">
-<meta property="og:description" content="什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。 引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在">
+<meta property="og:description" content="什么是 JVM概念JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。 引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java">
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg">
 <meta property="og:image" content="https://yudi-corgi.github.io/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/Heap.png">
 <meta property="article:published_time" content="2020-07-08T09:56:43.000Z">
-<meta property="article:modified_time" content="2020-07-19T10:21:28.947Z">
+<meta property="article:modified_time" content="2020-08-05T15:25:20.757Z">
 <meta property="article:author" content="YUDI-Corgi">
 <meta property="article:tag" content="Java 虚拟机">
 <meta name="twitter:card" content="summary">
@@ -388,8 +388,8 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-07-19T18:21:28+08:00">
-                2020/07/19
+              <time title="更新于" itemprop="dateModified" datetime="2020-08-05T23:25:20+08:00">
+                2020/08/05
               </time>
             
           </span>
@@ -453,8 +453,8 @@
       
 
       
-        <h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。</p>
-<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在 Java 虚拟机上运行的目标代码（字节码），就可以在多种平台上不加修改地运行。（摘自<a href="https://baike.baidu.com/item/JVM/2902369?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+        <h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。</p>
+<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java 虚拟机上运行的字节码(.class)，就可以在多种平台上不加修改地运行。对于 JVM，除了 Oracle，也有其它的开源或闭源实现。（摘自<a href="[https://zh.wikipedia.org/wiki/Java%E8%99%9A%E6%8B%9F%E6%9C%BA](https://zh.wikipedia.org/wiki/Java虚拟机)">维基百科</a>）</p>
 <h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
 <p>学习 JVM，可以围绕四个部分进行：</p>
 <ul>
@@ -477,7 +477,7 @@
 <h3 id="程序计数器（私有）"><a href="#程序计数器（私有）" class="headerlink" title="程序计数器（私有）"></a>程序计数器（私有）</h3><p>程序计数器是一块较小的内存空间，是当前线程所执行的字节码的行号指示器，每个线程都有一个独立的计数器，互不影响。通过该计数器，JVM 解释器就知道下一步要执行的字节码指令位置，而分支、循环、跳转、异常处理、线程恢复等基础功能也都依赖于该计数器来实现。</p>
 <p>如果线程正在执行的是一个 Java 方法，则计数器记录的是正在执行的虚拟机字节码指令的地址，若为 Native 方法，则计数器的值为空（Undefined），并且该内存区域是唯一一个在虚拟机中没有规定任何 OOM 异常情况的区域。</p>
 <h3 id="虚拟机栈（私有）"><a href="#虚拟机栈（私有）" class="headerlink" title="虚拟机栈（私有）"></a>虚拟机栈（私有）</h3><p>是描述 Java 方法执行的内存模型，每个方法（不含 Native）在执行时都会创建一个栈帧，方法执行过程，就对应着虚拟机栈的入栈到出栈的过程。（现在明白平常用 IDE 调试时点击 Drop Frame 是回退到方法执行前的原因了吧 (●’◡’●)）</p>
-<h4 id="栈帧（Stack-Frame）结构："><a href="#栈帧（Stack-Frame）结构：" class="headerlink" title="栈帧（Stack Frame）结构："></a>栈帧（Stack Frame）结构：</h4><ul>
+<h4 id="栈帧（Stack-Frame）结构"><a href="#栈帧（Stack-Frame）结构" class="headerlink" title="栈帧（Stack Frame）结构"></a>栈帧（Stack Frame）结构</h4><ul>
 <li>局部变量表</li>
 <li>操作栈</li>
 <li>动态链接</li>
@@ -485,7 +485,7 @@
 <li>额外附加信息</li>
 </ul>
 <p>栈帧是用来存储数据和部分过程结果的数据结构，同时也被用来处理动态链接、方法返回值和异常分派（Dispatch Exception）。栈帧随着方法调用而创建，随着方法结束而销毁——无论方法是正常完成还是异常完成（抛出了在方法内未被捕获的异常）都算作方法结束。 </p>
-<h4 id="异常（Exception）："><a href="#异常（Exception）：" class="headerlink" title="异常（Exception）："></a>异常（Exception）：</h4><p>JVM 规范规定该区域有两种异常：</p>
+<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域有两种异常：</p>
 <ul>
 <li><strong>StackOverFlowError</strong>：当线程请求栈深度超出虚拟机栈所允许的深度时抛出；</li>
 <li><strong>OutOfMemoryError</strong>：当 JVM 动态扩展到无法申请足够内存时抛出。</li>
@@ -500,7 +500,7 @@
 </ul>
 <p>可以简单的理解新生代主要是存放新创建的对象，而老年代则是存放生命周期或存活时间较长的对象。并且 JVM 在新生代的 Eden 区开辟了一小块内存区域，即 <strong>分配缓冲区（TLAB - Thread-local allocation buffer，线程私有）</strong>，因为 Java 程序中很多对象都是小对象且用过即丢，不存在线程共享和适合被快速 GC ，所以小对象通常会被 JVM 优先分配在 TLAB 上，好处是分配内存效率高。</p>
 <p>（<font color="red">PS：</font>这一部分细节涉及到 JVM GC 的知识内容，所以只是粗略介绍新生代和老年代，后续将会新开一篇专门讲解 GC 的文章，也算是挖个小坑，督促自己再接再厉 O(∩_∩)O 。）</p>
-<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
+<h4 id="异常（Exception）-1"><a href="#异常（Exception）-1" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
 <h3 id="方法区（共享）"><a href="#方法区（共享）" class="headerlink" title="方法区（共享）"></a>方法区（共享）</h3><p>方法区主要存放的是虚拟机加载的类信息、常量、静态变量、编译器编译后的代码等，而 GC 在此区域出现频率较低，主要针对的是常量池的回收和类型的卸载，GC 不会在主程序运行期对方法区进行清理，所以容易随着加载的 Class 增多导致类膨胀，从而引发 <strong>OutOfMemoryError</strong> 异常。</p>
 <p>方法区也常被称为<strong>“永久代（Permanent Generation）”</strong>，这是因为 <strong>HotSpot 虚拟机（Sun JDK 和 Open JDK 自带的虚拟机实现）</strong>的设计团队选择把 GC 分代收集扩展至方法区（也可以理解为是用永久代方法实现了方法区），从而在 GC 方面与 Java 堆保持一致。</p>
 <p>在 Java 8 后，永久代则被替换为<strong>“元空间（Metaspace）”</strong>，当然了，后者依然是基于 HotSpot 虚拟机，两者区别主要在于：<strong>元空间并不在虚拟机中，而是使用本地内存</strong>。因此元空间的大小仅受本地内存限制，基本不存在 OOM 异常问题。并且类的元数据放入本地内存，字符串池和静态变量等则放入到 Java 堆中。</p>
@@ -711,7 +711,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是-JVM"><span class="nav-number">1.</span> <span class="nav-text">什么是 JVM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解"><span class="nav-number">1.2.</span> <span class="nav-text">理解</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM-内存模型"><span class="nav-number">2.</span> <span class="nav-text">JVM 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#程序计数器（私有）"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器（私有）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟机栈（私有）"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟机栈（私有）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#栈帧（Stack-Frame）结构："><span class="nav-number">2.2.1.</span> <span class="nav-text">栈帧（Stack Frame）结构：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异常（Exception）："><span class="nav-number">2.2.2.</span> <span class="nav-text">异常（Exception）：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地方法栈（私有）"><span class="nav-number">2.3.</span> <span class="nav-text">本地方法栈（私有）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java-堆（共享）"><span class="nav-number">2.4.</span> <span class="nav-text">Java 堆（共享）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异常（Exception）"><span class="nav-number">2.4.1.</span> <span class="nav-text">异常（Exception）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区（共享）"><span class="nav-number">2.5.</span> <span class="nav-text">方法区（共享）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#运行时常量池"><span class="nav-number">2.5.1.</span> <span class="nav-text">运行时常量池</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">3.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#花絮"><span class="nav-number">6.</span> <span class="nav-text">花絮</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是-JVM"><span class="nav-number">1.</span> <span class="nav-text">什么是 JVM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解"><span class="nav-number">1.2.</span> <span class="nav-text">理解</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM-内存模型"><span class="nav-number">2.</span> <span class="nav-text">JVM 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#程序计数器（私有）"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器（私有）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟机栈（私有）"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟机栈（私有）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#栈帧（Stack-Frame）结构"><span class="nav-number">2.2.1.</span> <span class="nav-text">栈帧（Stack Frame）结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异常（Exception）"><span class="nav-number">2.2.2.</span> <span class="nav-text">异常（Exception）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地方法栈（私有）"><span class="nav-number">2.3.</span> <span class="nav-text">本地方法栈（私有）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java-堆（共享）"><span class="nav-number">2.4.</span> <span class="nav-text">Java 堆（共享）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异常（Exception）-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">异常（Exception）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区（共享）"><span class="nav-number">2.5.</span> <span class="nav-text">方法区（共享）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#运行时常量池"><span class="nav-number">2.5.1.</span> <span class="nav-text">运行时常量池</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">3.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#花絮"><span class="nav-number">6.</span> <span class="nav-text">花絮</span></a></li></ol></div>
             
 
           </div>

@@ -3,8 +3,8 @@
   <entry>
     <title>JVM-内存模型</title>
     <url>/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</url>
-    <content><![CDATA[<h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，JVM 是一种用于计算设备的规范，是一个虚构出来的计算机，是通过在实际的计算机上仿真模拟各种计算机功能来实现的。</p>
-<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。Java 语言使用 Java 虚拟机屏蔽了与具体平台相关的信息，使得 Java 语言编译程序只需生成在 Java 虚拟机上运行的目标代码（字节码），就可以在多种平台上不加修改地运行。（摘自<a href="https://baike.baidu.com/item/JVM/2902369?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+    <content><![CDATA[<h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。</p>
+<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java 虚拟机上运行的字节码(.class)，就可以在多种平台上不加修改地运行。对于 JVM，除了 Oracle，也有其它的开源或闭源实现。（摘自<a href="[https://zh.wikipedia.org/wiki/Java%E8%99%9A%E6%8B%9F%E6%9C%BA](https://zh.wikipedia.org/wiki/Java虚拟机)">维基百科</a>）</p>
 <h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
 <p>学习 JVM，可以围绕四个部分进行：</p>
 <ul>
@@ -27,7 +27,7 @@
 <h3 id="程序计数器（私有）"><a href="#程序计数器（私有）" class="headerlink" title="程序计数器（私有）"></a>程序计数器（私有）</h3><p>程序计数器是一块较小的内存空间，是当前线程所执行的字节码的行号指示器，每个线程都有一个独立的计数器，互不影响。通过该计数器，JVM 解释器就知道下一步要执行的字节码指令位置，而分支、循环、跳转、异常处理、线程恢复等基础功能也都依赖于该计数器来实现。</p>
 <p>如果线程正在执行的是一个 Java 方法，则计数器记录的是正在执行的虚拟机字节码指令的地址，若为 Native 方法，则计数器的值为空（Undefined），并且该内存区域是唯一一个在虚拟机中没有规定任何 OOM 异常情况的区域。</p>
 <h3 id="虚拟机栈（私有）"><a href="#虚拟机栈（私有）" class="headerlink" title="虚拟机栈（私有）"></a>虚拟机栈（私有）</h3><p>是描述 Java 方法执行的内存模型，每个方法（不含 Native）在执行时都会创建一个栈帧，方法执行过程，就对应着虚拟机栈的入栈到出栈的过程。（现在明白平常用 IDE 调试时点击 Drop Frame 是回退到方法执行前的原因了吧 (●’◡’●)）</p>
-<h4 id="栈帧（Stack-Frame）结构："><a href="#栈帧（Stack-Frame）结构：" class="headerlink" title="栈帧（Stack Frame）结构："></a>栈帧（Stack Frame）结构：</h4><ul>
+<h4 id="栈帧（Stack-Frame）结构"><a href="#栈帧（Stack-Frame）结构" class="headerlink" title="栈帧（Stack Frame）结构"></a>栈帧（Stack Frame）结构</h4><ul>
 <li>局部变量表</li>
 <li>操作栈</li>
 <li>动态链接</li>
@@ -35,7 +35,7 @@
 <li>额外附加信息</li>
 </ul>
 <p>栈帧是用来存储数据和部分过程结果的数据结构，同时也被用来处理动态链接、方法返回值和异常分派（Dispatch Exception）。栈帧随着方法调用而创建，随着方法结束而销毁——无论方法是正常完成还是异常完成（抛出了在方法内未被捕获的异常）都算作方法结束。 </p>
-<h4 id="异常（Exception）："><a href="#异常（Exception）：" class="headerlink" title="异常（Exception）："></a>异常（Exception）：</h4><p>JVM 规范规定该区域有两种异常：</p>
+<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域有两种异常：</p>
 <ul>
 <li><strong>StackOverFlowError</strong>：当线程请求栈深度超出虚拟机栈所允许的深度时抛出；</li>
 <li><strong>OutOfMemoryError</strong>：当 JVM 动态扩展到无法申请足够内存时抛出。</li>
@@ -50,7 +50,7 @@
 </ul>
 <p>可以简单的理解新生代主要是存放新创建的对象，而老年代则是存放生命周期或存活时间较长的对象。并且 JVM 在新生代的 Eden 区开辟了一小块内存区域，即 <strong>分配缓冲区（TLAB - Thread-local allocation buffer，线程私有）</strong>，因为 Java 程序中很多对象都是小对象且用过即丢，不存在线程共享和适合被快速 GC ，所以小对象通常会被 JVM 优先分配在 TLAB 上，好处是分配内存效率高。</p>
 <p>（<font color="red">PS：</font>这一部分细节涉及到 JVM GC 的知识内容，所以只是粗略介绍新生代和老年代，后续将会新开一篇专门讲解 GC 的文章，也算是挖个小坑，督促自己再接再厉 O(∩_∩)O 。）</p>
-<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
+<h4 id="异常（Exception）-1"><a href="#异常（Exception）-1" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
 <h3 id="方法区（共享）"><a href="#方法区（共享）" class="headerlink" title="方法区（共享）"></a>方法区（共享）</h3><p>方法区主要存放的是虚拟机加载的类信息、常量、静态变量、编译器编译后的代码等，而 GC 在此区域出现频率较低，主要针对的是常量池的回收和类型的卸载，GC 不会在主程序运行期对方法区进行清理，所以容易随着加载的 Class 增多导致类膨胀，从而引发 <strong>OutOfMemoryError</strong> 异常。</p>
 <p>方法区也常被称为<strong>“永久代（Permanent Generation）”</strong>，这是因为 <strong>HotSpot 虚拟机（Sun JDK 和 Open JDK 自带的虚拟机实现）</strong>的设计团队选择把 GC 分代收集扩展至方法区（也可以理解为是用永久代方法实现了方法区），从而在 GC 方面与 Java 堆保持一致。</p>
 <p>在 Java 8 后，永久代则被替换为<strong>“元空间（Metaspace）”</strong>，当然了，后者依然是基于 HotSpot 虚拟机，两者区别主要在于：<strong>元空间并不在虚拟机中，而是使用本地内存</strong>。因此元空间的大小仅受本地内存限制，基本不存在 OOM 异常问题。并且类的元数据放入本地内存，字符串池和静态变量等则放入到 Java 堆中。</p>
@@ -89,6 +89,99 @@
 ]]></content>
       <tags>
         <tag>Java 虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>聊聊 HashMap</title>
+    <url>/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 <code>Key-Value</code>键值对映射的接口，即一个 <code>Key</code>对应一个<code>Value</code>。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的数据存储与使用。而本篇的主角是 HashMap，让我们来粗浅的聊聊它吧。（注意：本篇 HashMap 的源码和原理讲解全部基于 JDK1.7）</p>
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><p>HashMap 是基于哈希表(Hashtable)的 Map 实现类，以<code>Key-Value</code>形式保存数据，<code>Key</code>唯一，<code>Value</code>可重复，并采用 Hash 算法确定<code>Key-Value</code>的存储位置从而保证其进行数据快速存取。类图如下：</p>
+<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap类图.png" width="500">
+
+<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p>HashMap 的底层结构是 <strong>数组+链表</strong>，是通过计算<code>key</code>的 <code>hash</code> 值来确定数组下标位置，然后将<code>key</code>和<code>value</code>作为 Entry&lt;K,V&gt; 对象进行存储。这里需要注意，是作为 <strong>Entry&lt;K,V&gt;</strong> 对象存储，而不是通过 <code>key</code>确定数组下标后直接存放值。Entry&lt;K,V&gt; 是 Map 的内部接口，本质上是一个映射(键值对)，HashMap 类中对它有一个静态实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Entry&lt;K,V&gt; next;  <span class="comment">//链表节点中的下一个 Entry&lt;K,V&gt; 对象</span></span><br><span class="line">    <span class="keyword">int</span> hash;         <span class="comment">//当前 Entry 对象的 hash 值</span></span><br><span class="line">    <span class="comment">//构造函数</span></span><br><span class="line">    Entry(<span class="keyword">int</span> h, K k, V v, Entry&lt;K,V&gt; n) &#123;</span><br><span class="line">        value = v;</span><br><span class="line">        next = n;</span><br><span class="line">        key = k;</span><br><span class="line">        hash = h;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//其它代码省略 ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从源码可以看出，Entry&lt;K,V&gt; 对象保存了<code>key</code>、<code>value</code>、<code>hash值</code>，还保存了当前 Entry&lt;K,V&gt; 对象的下一个 Entry&lt;K,V&gt; 对象：<code>Entry&lt;K,V&gt; next</code>。这也是为什么 HasHMap 结构是数组+链表，数组其实就是 Entry&lt;K,V&gt; 类型数组，而链表则是单向的，每个节点都是一个 Entry&lt;K,V&gt; 对象，并保存了下一个 Entry&lt;K,V&gt; 节点的数据，通过一张图来简单理解下：</p>
+<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap结构.jpg" width="600" height="400">
+
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>HashMap 内部定义的几个主要属性如下：</p>
+<ul>
+<li><code>transient Entry[] table</code>：Entry&lt;K,V&gt; 对象数组，长度始终保持为 2 的幂次方</li>
+<li><code>transient int size</code>：HashMap 已存储的元素数量</li>
+<li><code>final float loadFactor</code>：负载因子，默认是 0.75，扩容时使用</li>
+<li><code>static final int DEFAULT_INITIAL_CAPACITY</code>：HashMap 的默认初始容量</li>
+<li><code>int threshold</code>：阈值，当 HashMap 存储的元素数量达到该值，则会触发扩容操作</li>
+<li><code>transient int modCount</code>：记录 HashMap 结构修改的次数，如修改值、重新扩容等</li>
+</ul>
+<p>HashMap 阈值大小计算为： <strong>capacity(容量) * loadFactor(负载因子) = threshold(阈值)</strong> ，<code>capacity</code>也就是构建 HashMap 时指定的容量大小（不指定则默认为 16）。一旦 HashMap 的 <code>size</code> 超过阈值，就会进行扩容操作，重新调整 HashMap 的大小以便存放更多的元素。</p>
+<h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><ul>
+<li><code>public int size()</code>：返回 HashMap 的元素数量</li>
+<li><code>public boolean isEmpty()</code>：判断 HashMap 是否为空</li>
+<li><code>public V put(K key, V value)</code>：存放键值对，即数据元素</li>
+<li><code>public V get(Object key)</code>：通过 <code>key</code> 获取 <code>Value</code></li>
+<li><code>public V remove(Object key)</code>：通过<code>key</code>删除元素</li>
+<li><code>public void clear()</code>：清空 HashMap</li>
+<li><code>public boolean containsKey(Object key)</code>：判断传递的<code>key</code>在 HashMap 中是否已存在</li>
+<li><code>public boolean containsValue(Object value)</code>：判断传递的<code>value</code>是否已有<code>key</code>进行映射</li>
+<li><code>public Set keySet()</code>：获取所有<code>key</code>的 Set 集合</li>
+<li><code>public Set&gt; entrySet()</code>：获取所有 Entry&lt;K,V&gt; 的 Set 集合，可以用来遍历 HashMap</li>
+</ul>
+<h2 id="方法原理"><a href="#方法原理" class="headerlink" title="方法原理"></a>方法原理</h2><p>接下来我们具体看看 HashMap 设值、取值、扩容、复制数据等方法的具体实现是怎么样的。</p>
+<h3 id="put-方法实现"><a href="#put-方法实现" class="headerlink" title="put 方法实现"></a>put 方法实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> putForNullKey(value);  <span class="comment">//1.判断 key 是否为 Null，为 Null 直接存放在数组下标 0 的位置</span></span><br><span class="line">    <span class="keyword">int</span> hash = hash(key);  <span class="comment">//2.计算 key 的 hash 值</span></span><br><span class="line">    <span class="keyword">int</span> i = indexFor(hash, table.length);  <span class="comment">//3.通过 hash 值计算数组下标 index</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[i]; e != <span class="keyword">null</span>; e = e.next) &#123;</span><br><span class="line">        Object k;</span><br><span class="line">        <span class="comment">//4.判断 hash 值和 key 值是否相同，相同则覆盖并返回旧值</span></span><br><span class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">            V oldValue = e.value;</span><br><span class="line">            e.value = value;</span><br><span class="line">            e.recordAccess(<span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    modCount++;  <span class="comment">//5.修改次数 +1</span></span><br><span class="line">    addEntry(hash, key, value, i);  <span class="comment">//6.将 key-value 封装为 Entry 对象并添加，</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">indexFor</span><span class="params">(<span class="keyword">int</span> h, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> h &amp; (length-<span class="number">1</span>);  <span class="comment">// 数组长度-1，按位与计算出下标</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//如果加入新元素超过阈值，则扩容为原来的2倍大小</span></span><br><span class="line">    <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</span><br><span class="line">        resize(<span class="number">2</span> * table.length);</span><br><span class="line">        hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</span><br><span class="line">        bucketIndex = indexFor(hash, table.length);</span><br><span class="line">    &#125;</span><br><span class="line">    createEntry(hash, key, value, bucketIndex);  <span class="comment">// 创建 Entry</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">createEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">    Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">    <span class="comment">//若 e 不为空，则说明发生 hash 碰撞，将 Entry 插入到链表头，将原有节点(e)作为下一个节点</span></span><br><span class="line">    table[bucketIndex] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br><span class="line">    size++; <span class="comment">//HashMap 元素数量 +1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结下步骤：</p>
+<ol>
+<li>判断 <code>key</code> 是否为 <code>Null</code>，为 <code>Null</code> 则直接存放到数组下标为 0 的位置；</li>
+<li>计算 <code>key</code> 的 hash 值并通过该值确定数组下标位置；</li>
+<li>判断 <code>key</code> 是否重复，重复则覆盖并返回旧值；</li>
+<li>在 <code>addEntry()</code> 方法判断是否需要扩容，最后将 <code>key-value</code> 封装为 Entry&lt;K,V&gt; 对象保存。</li>
+</ol>
+<h3 id="get-方法实现"><a href="#get-方法实现" class="headerlink" title="get 方法实现"></a>get 方法实现</h3><p>理解了 <code>put()</code> 方法后，<code>get()</code> 方法就简单多了，直接上源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> getForNullKey();  <span class="comment">//1.判断 key 是否 Null，为空直接获取数组下标为 0 的元素</span></span><br><span class="line">    Entry&lt;K,V&gt; entry = getEntry(key);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span> == entry ? <span class="keyword">null</span> : entry.getValue();  <span class="comment">//三目表达式判断</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntry</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> hash = (key == <span class="keyword">null</span>) ? <span class="number">0</span> : hash(key);  <span class="comment">//计算 key 的 hash 值</span></span><br><span class="line">    <span class="comment">//2.indexFor() 计算数组下标并循环遍历该下标处的链表节点</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[indexFor(hash, table.length)]; e != <span class="keyword">null</span>;e = e.next) &#123;</span><br><span class="line">        Object k;</span><br><span class="line">        <span class="comment">//3.判断是否 hash 值和 key 值是否相同且不为 null，不匹配则循环判断下一节点</span></span><br><span class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            <span class="keyword">return</span> e;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结步骤：</p>
+<ol>
+<li>判断 <code>key</code>是否 <code>Null</code>，为 <code>Null</code> 直接取数组下标为 0 的元素；</li>
+<li>在 <code>getEntry()</code> 方法里计算 <code>key</code> 的 <code>hash</code> 值找到下标然后循环遍历判断 <code>key</code> 的值，存在返回值，不存在则返回 <code>Null</code>。</li>
+</ol>
+<h3 id="resize-transfer-方法实现"><a href="#resize-transfer-方法实现" class="headerlink" title="resize/transfer 方法实现"></a>resize/transfer 方法实现</h3><p>这两个方法主要是数组扩容和数据复制，在 HashMap 中，这个过程称为 <strong>rehashing</strong>。同样上源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">resize</span><span class="params">(<span class="keyword">int</span> newCapacity)</span> </span>&#123;</span><br><span class="line">    Entry[] oldTable = table;</span><br><span class="line">    <span class="keyword">int</span> oldCapacity = oldTable.length;  <span class="comment">//1.获取旧数组长度</span></span><br><span class="line">    <span class="comment">//MAXIMUM_CAPACITY 的值为 1&lt;&lt;30，是 Integer.MAX_VALUE 的一半减1，已经大的夸张，基本不存在扩容情况</span></span><br><span class="line">    <span class="comment">//所以重新设置阈值后直接返回</span></span><br><span class="line">    <span class="keyword">if</span> (oldCapacity == MAXIMUM_CAPACITY) &#123; </span><br><span class="line">        threshold = Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2.创建一个新的数组，大小为原来的2倍</span></span><br><span class="line">    Entry[] newTable = <span class="keyword">new</span> Entry[newCapacity];</span><br><span class="line">    <span class="comment">//3.获取是否需要重新计算 hash</span></span><br><span class="line">    <span class="keyword">boolean</span> oldAltHashing = useAltHashing;</span><br><span class="line">    useAltHashing |= sun.misc.VM.isBooted() &amp;&amp;</span><br><span class="line">        (newCapacity &gt;= Holder.ALTERNATIVE_HASHING_THRESHOLD);</span><br><span class="line">    <span class="keyword">boolean</span> rehash = oldAltHashing ^ useAltHashing;</span><br><span class="line">    <span class="comment">//4.扩容的关键方法，旧数组数据复制到新数组</span></span><br><span class="line">    transfer(newTable, rehash);</span><br><span class="line">    table = newTable;</span><br><span class="line">    <span class="comment">//5.重新计算阈值</span></span><br><span class="line">    threshold = (<span class="keyword">int</span>)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">transfer</span><span class="params">(Entry[] newTable, <span class="keyword">boolean</span> rehash)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> newCapacity = newTable.length;</span><br><span class="line">    <span class="comment">//遍历旧数组</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e : table) &#123;</span><br><span class="line">        <span class="comment">//遍历当前节点的链表</span></span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">null</span> != e) &#123;</span><br><span class="line">            Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">            <span class="comment">//判断是否需要重新计算 hash</span></span><br><span class="line">            <span class="keyword">if</span> (rehash) &#123;</span><br><span class="line">                e.hash = <span class="keyword">null</span> == e.key ? <span class="number">0</span> : hash(e.key);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> i = indexFor(e.hash, newCapacity);  <span class="comment">//计算数组下标</span></span><br><span class="line">            e.next = newTable[i];  <span class="comment">//头插法，链表头部插入，已有的节点往后移作为 next 节点</span></span><br><span class="line">            newTable[i] = e;  <span class="comment">//头部插入</span></span><br><span class="line">            e = next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结步骤：</p>
+<ol>
+<li>创建大小为原来 2 倍的新数组；</li>
+<li>在<code>transfer()</code>方法将旧数组数据循环遍历复制到新数组（关键）；</li>
+<li>将新数组赋值给 HashMap 的<code>table</code>变量，并重新计算阈值。</li>
+</ol>
+<p>理解清楚 HashMap 的设值、取值、扩容复制原理后，基本上其它方法实现都可以很容易理解，其它方法则交给童鞋们自己去查看源码啦，这里就不多赘述了。</p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><h3 id="与-Hashtable-的区别"><a href="#与-Hashtable-的区别" class="headerlink" title="与 Hashtable 的区别"></a>与 Hashtable 的区别</h3><p>这里简单对比下 HashMap 和 Hashtable：</p>
+<table>
+<thead>
+<tr>
+<th>HashMap</th>
+<th>key 允许为 Null(唯一)</th>
+<th>线程不安全</th>
+<th>效率较高</th>
+<th>继承于 AbstractMap&lt;K,V&gt;</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hashtable</td>
+<td>key 不为空</td>
+<td>线程安全</td>
+<td>效率较低</td>
+<td>继承于 Dictionary&lt;K,V&gt;</td>
+</tr>
+</tbody></table>
+<p>Hashtable 的<code>key</code>不能为空，是因为 <code>put()</code>方法里作了判断，为空直接抛出 NPE 异常；而它之所以是线程安全，通过源码可知是因为内部方法都加上了 <code>Synchronize</code>同步锁，但<code>Synchronize</code>是重量级锁，容易引起线程上下文切换而带来线程调度的开销，因此在多线程并发应用中使用是比较少的，推荐使用 ConcurrentHashMap，其采用的是分段锁，效率比 Hashtable 要高出许多（关于锁机制的问题想了解的童鞋们可以自己搜索相关资料学习下）。</p>
+<h3 id="HashMap-死链问题"><a href="#HashMap-死链问题" class="headerlink" title="HashMap 死链问题"></a>HashMap 死链问题</h3><p>HashMap 死链是指在 Java 并发情况下，多线程操作 HashMap 产生 Race Condition(竞用条件)，而此时 HashMap 刚好需要扩容，导致旧数据复制到新数组产生死循环。简单讲就是链表中 A(Entry) 的 next 属性指向 B(Entry)，而 B 的 next 属性又指向 A。</p>
+<p>关于死链具体情况，在<a href="https://coolshell.cn/articles/9606.html" target="_blank" rel="noopener"><font color="blue">左耳朵耗子-陈皓的《疫苗：Java HashMap的死循环》</font></a>这篇里讲解的非常清楚，很清晰易懂，童鞋们可以看看了解，并且死链情况在 Java1.8 中已经得到解决，在 1.8 版本开始，HashMap 的结构就变为了 <strong>数组+链表+红黑树</strong>，后续新篇章也会对 1.8 版本的 HashMap 作下介绍讲解。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后来概括下 HashMap 的工作原理：当通过 <code>put()</code> 方法存值时会调用 <code>key.hashCode()</code> 计算哈希值从而获取数组下标，并将<code>Key-Value</code>作为 Entry&lt;K,V&gt; 对象进行存储，调用<code>get()</code>方法时同样计算<code>key</code>的哈希值然后获取数组下标，然后通过 <code>key.equals()</code>判断值是否相同，最终返回结果。当存值时若元素数量大于阈值<code>threshold</code>则进行扩容，大小为原来的2倍。</p>
+<p>在日常开发中，HashMap 数据结构使用是非常频繁的，而且也是面试经典问题，对于 HashMap 的理解掌握，至关重要！</p>
+]]></content>
+      <tags>
+        <tag>HashMap</tag>
+        <tag>Java 数据结构</tag>
       </tags>
   </entry>
   <entry>
@@ -178,99 +271,6 @@
 ]]></content>
       <tags>
         <tag>Java 虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>聊聊 HashMap</title>
-    <url>/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 <code>Key-Value</code>键值对映射的接口，即一个 <code>Key</code>对应一个<code>Value</code>。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的数据存储与使用。而本篇的主角是 HashMap，让我们来粗浅的聊聊它吧。（注意：本篇 HashMap 的源码和原理讲解全部基于 JDK1.7）</p>
-<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><p>HashMap 是基于哈希表(Hashtable)的 Map 实现类，以<code>Key-Value</code>形式保存数据，<code>Key</code>唯一，<code>Value</code>可重复，并采用 Hash 算法确定<code>Key-Value</code>的存储位置从而保证其进行数据快速存取。类图如下：</p>
-<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap类图.png" width="500">
-
-<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p>HashMap 的底层结构是 <strong>数组+链表</strong>，是通过计算<code>key</code>的 <code>hash</code> 值来确定数组下标位置，然后将<code>key</code>和<code>value</code>作为 Entry&lt;K,V&gt; 对象进行存储。这里需要注意，是作为 <strong>Entry&lt;K,V&gt;</strong> 对象存储，而不是通过 <code>key</code>确定数组下标后直接存放值。Entry&lt;K,V&gt; 是 Map 的内部接口，本质上是一个映射(键值对)，HashMap 类中对它有一个静态实现，如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Entry&lt;K,V&gt; next;  <span class="comment">//链表节点中的下一个 Entry&lt;K,V&gt; 对象</span></span><br><span class="line">    <span class="keyword">int</span> hash;         <span class="comment">//当前 Entry 对象的 hash 值</span></span><br><span class="line">    <span class="comment">//构造函数</span></span><br><span class="line">    Entry(<span class="keyword">int</span> h, K k, V v, Entry&lt;K,V&gt; n) &#123;</span><br><span class="line">        value = v;</span><br><span class="line">        next = n;</span><br><span class="line">        key = k;</span><br><span class="line">        hash = h;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//其它代码省略 ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>从源码可以看出，Entry&lt;K,V&gt; 对象保存了<code>key</code>、<code>value</code>、<code>hash值</code>，还保存了当前 Entry&lt;K,V&gt; 对象的下一个 Entry&lt;K,V&gt; 对象：<code>Entry&lt;K,V&gt; next</code>。这也是为什么 HasHMap 结构是数组+链表，数组其实就是 Entry&lt;K,V&gt; 类型数组，而链表则是单向的，每个节点都是一个 Entry&lt;K,V&gt; 对象，并保存了下一个 Entry&lt;K,V&gt; 节点的数据，通过一张图来简单理解下：</p>
-<img src="/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/HashMap结构.jpg" width="600" height="400">
-
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>HashMap 内部定义的几个主要属性如下：</p>
-<ul>
-<li><code>transient Entry[] table</code>：Entry&lt;K,V&gt; 对象数组，长度始终保持为 2 的幂次方</li>
-<li><code>transient int size</code>：HashMap 已存储的元素数量</li>
-<li><code>final float loadFactor</code>：负载因子，默认是 0.75，扩容时使用</li>
-<li><code>static final int DEFAULT_INITIAL_CAPACITY</code>：HashMap 的默认初始容量</li>
-<li><code>int threshold</code>：阈值，当 HashMap 存储的元素数量达到该值，则会触发扩容操作</li>
-<li><code>transient int modCount</code>：记录 HashMap 结构修改的次数，如修改值、重新扩容等</li>
-</ul>
-<p>HashMap 阈值大小计算为： <strong>capacity(容量) * loadFactor(负载因子) = threshold(阈值)</strong> ，<code>capacity</code>也就是构建 HashMap 时指定的容量大小（不指定则默认为 16）。一旦 HashMap 的 <code>size</code> 超过阈值，就会进行扩容操作，重新调整 HashMap 的大小以便存放更多的元素。</p>
-<h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><ul>
-<li><code>public int size()</code>：返回 HashMap 的元素数量</li>
-<li><code>public boolean isEmpty()</code>：判断 HashMap 是否为空</li>
-<li><code>public V put(K key, V value)</code>：存放键值对，即数据元素</li>
-<li><code>public V get(Object key)</code>：通过 <code>key</code> 获取 <code>Value</code></li>
-<li><code>public V remove(Object key)</code>：通过<code>key</code>删除元素</li>
-<li><code>public void clear()</code>：清空 HashMap</li>
-<li><code>public boolean containsKey(Object key)</code>：判断传递的<code>key</code>在 HashMap 中是否已存在</li>
-<li><code>public boolean containsValue(Object value)</code>：判断传递的<code>value</code>是否已有<code>key</code>进行映射</li>
-<li><code>public Set keySet()</code>：获取所有<code>key</code>的 Set 集合</li>
-<li><code>public Set&gt; entrySet()</code>：获取所有 Entry&lt;K,V&gt; 的 Set 集合，可以用来遍历 HashMap</li>
-</ul>
-<h2 id="方法原理"><a href="#方法原理" class="headerlink" title="方法原理"></a>方法原理</h2><p>接下来我们具体看看 HashMap 设值、取值、扩容、复制数据等方法的具体实现是怎么样的。</p>
-<h3 id="put-方法实现"><a href="#put-方法实现" class="headerlink" title="put 方法实现"></a>put 方法实现</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> putForNullKey(value);  <span class="comment">//1.判断 key 是否为 Null，为 Null 直接存放在数组下标 0 的位置</span></span><br><span class="line">    <span class="keyword">int</span> hash = hash(key);  <span class="comment">//2.计算 key 的 hash 值</span></span><br><span class="line">    <span class="keyword">int</span> i = indexFor(hash, table.length);  <span class="comment">//3.通过 hash 值计算数组下标 index</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[i]; e != <span class="keyword">null</span>; e = e.next) &#123;</span><br><span class="line">        Object k;</span><br><span class="line">        <span class="comment">//4.判断 hash 值和 key 值是否相同，相同则覆盖并返回旧值</span></span><br><span class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">            V oldValue = e.value;</span><br><span class="line">            e.value = value;</span><br><span class="line">            e.recordAccess(<span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    modCount++;  <span class="comment">//5.修改次数 +1</span></span><br><span class="line">    addEntry(hash, key, value, i);  <span class="comment">//6.将 key-value 封装为 Entry 对象并添加，</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">indexFor</span><span class="params">(<span class="keyword">int</span> h, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> h &amp; (length-<span class="number">1</span>);  <span class="comment">// 数组长度-1，按位与计算出下标</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//如果加入新元素超过阈值，则扩容为原来的2倍大小</span></span><br><span class="line">    <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</span><br><span class="line">        resize(<span class="number">2</span> * table.length);</span><br><span class="line">        hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</span><br><span class="line">        bucketIndex = indexFor(hash, table.length);</span><br><span class="line">    &#125;</span><br><span class="line">    createEntry(hash, key, value, bucketIndex);  <span class="comment">// 创建 Entry</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">createEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">    Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">    <span class="comment">//若 e 不为空，则说明发生 hash 碰撞，将 Entry 插入到链表头，将原有节点(e)作为下一个节点</span></span><br><span class="line">    table[bucketIndex] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br><span class="line">    size++; <span class="comment">//HashMap 元素数量 +1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>总结下步骤：</p>
-<ol>
-<li>判断 <code>key</code> 是否为 <code>Null</code>，为 <code>Null</code> 则直接存放到数组下标为 0 的位置；</li>
-<li>计算 <code>key</code> 的 hash 值并通过该值确定数组下标位置；</li>
-<li>判断 <code>key</code> 是否重复，重复则覆盖并返回旧值；</li>
-<li>在 <code>addEntry()</code> 方法判断是否需要扩容，最后将 <code>key-value</code> 封装为 Entry&lt;K,V&gt; 对象保存。</li>
-</ol>
-<h3 id="get-方法实现"><a href="#get-方法实现" class="headerlink" title="get 方法实现"></a>get 方法实现</h3><p>理解了 <code>put()</code> 方法后，<code>get()</code> 方法就简单多了，直接上源码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> getForNullKey();  <span class="comment">//1.判断 key 是否 Null，为空直接获取数组下标为 0 的元素</span></span><br><span class="line">    Entry&lt;K,V&gt; entry = getEntry(key);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span> == entry ? <span class="keyword">null</span> : entry.getValue();  <span class="comment">//三目表达式判断</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntry</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> hash = (key == <span class="keyword">null</span>) ? <span class="number">0</span> : hash(key);  <span class="comment">//计算 key 的 hash 值</span></span><br><span class="line">    <span class="comment">//2.indexFor() 计算数组下标并循环遍历该下标处的链表节点</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[indexFor(hash, table.length)]; e != <span class="keyword">null</span>;e = e.next) &#123;</span><br><span class="line">        Object k;</span><br><span class="line">        <span class="comment">//3.判断是否 hash 值和 key 值是否相同且不为 null，不匹配则循环判断下一节点</span></span><br><span class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            <span class="keyword">return</span> e;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>总结步骤：</p>
-<ol>
-<li>判断 <code>key</code>是否 <code>Null</code>，为 <code>Null</code> 直接取数组下标为 0 的元素；</li>
-<li>在 <code>getEntry()</code> 方法里计算 <code>key</code> 的 <code>hash</code> 值找到下标然后循环遍历判断 <code>key</code> 的值，存在返回值，不存在则返回 <code>Null</code>。</li>
-</ol>
-<h3 id="resize-transfer-方法实现"><a href="#resize-transfer-方法实现" class="headerlink" title="resize/transfer 方法实现"></a>resize/transfer 方法实现</h3><p>这两个方法主要是数组扩容和数据复制，在 HashMap 中，这个过程称为 <strong>rehashing</strong>。同样上源码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">resize</span><span class="params">(<span class="keyword">int</span> newCapacity)</span> </span>&#123;</span><br><span class="line">    Entry[] oldTable = table;</span><br><span class="line">    <span class="keyword">int</span> oldCapacity = oldTable.length;  <span class="comment">//1.获取旧数组长度</span></span><br><span class="line">    <span class="comment">//MAXIMUM_CAPACITY 的值为 1&lt;&lt;30，是 Integer.MAX_VALUE 的一半减1，已经大的夸张，基本不存在扩容情况</span></span><br><span class="line">    <span class="comment">//所以重新设置阈值后直接返回</span></span><br><span class="line">    <span class="keyword">if</span> (oldCapacity == MAXIMUM_CAPACITY) &#123; </span><br><span class="line">        threshold = Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2.创建一个新的数组，大小为原来的2倍</span></span><br><span class="line">    Entry[] newTable = <span class="keyword">new</span> Entry[newCapacity];</span><br><span class="line">    <span class="comment">//3.获取是否需要重新计算 hash</span></span><br><span class="line">    <span class="keyword">boolean</span> oldAltHashing = useAltHashing;</span><br><span class="line">    useAltHashing |= sun.misc.VM.isBooted() &amp;&amp;</span><br><span class="line">        (newCapacity &gt;= Holder.ALTERNATIVE_HASHING_THRESHOLD);</span><br><span class="line">    <span class="keyword">boolean</span> rehash = oldAltHashing ^ useAltHashing;</span><br><span class="line">    <span class="comment">//4.扩容的关键方法，旧数组数据复制到新数组</span></span><br><span class="line">    transfer(newTable, rehash);</span><br><span class="line">    table = newTable;</span><br><span class="line">    <span class="comment">//5.重新计算阈值</span></span><br><span class="line">    threshold = (<span class="keyword">int</span>)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">transfer</span><span class="params">(Entry[] newTable, <span class="keyword">boolean</span> rehash)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> newCapacity = newTable.length;</span><br><span class="line">    <span class="comment">//遍历旧数组</span></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e : table) &#123;</span><br><span class="line">        <span class="comment">//遍历当前节点的链表</span></span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">null</span> != e) &#123;</span><br><span class="line">            Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">            <span class="comment">//判断是否需要重新计算 hash</span></span><br><span class="line">            <span class="keyword">if</span> (rehash) &#123;</span><br><span class="line">                e.hash = <span class="keyword">null</span> == e.key ? <span class="number">0</span> : hash(e.key);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> i = indexFor(e.hash, newCapacity);  <span class="comment">//计算数组下标</span></span><br><span class="line">            e.next = newTable[i];  <span class="comment">//链表头部插入，已有的节点往后移作为 next 节点</span></span><br><span class="line">            newTable[i] = e;  <span class="comment">//头部插入</span></span><br><span class="line">            e = next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>总结步骤：</p>
-<ol>
-<li>创建大小为原来 2 倍的新数组；</li>
-<li>在<code>transfer()</code>方法将旧数组数据循环遍历复制到新数组（关键）；</li>
-<li>将新数组赋值给 HashMap 的<code>table</code>变量，并重新计算阈值。</li>
-</ol>
-<p>理解清楚 HashMap 的设值、取值、扩容复制原理后，基本上其它方法实现都可以很容易理解，其它方法则交给童鞋们自己去查看源码啦，这里就不多赘述了。</p>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><h3 id="与-Hashtable-的区别"><a href="#与-Hashtable-的区别" class="headerlink" title="与 Hashtable 的区别"></a>与 Hashtable 的区别</h3><p>这里简单对比下 HashMap 和 Hashtable：</p>
-<table>
-<thead>
-<tr>
-<th>HashMap</th>
-<th>key 允许为 Null(唯一)</th>
-<th>线程不安全</th>
-<th>效率较高</th>
-<th>继承于 AbstractMap&lt;K,V&gt;</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Hashtable</td>
-<td>key 不为空</td>
-<td>线程安全</td>
-<td>效率较低</td>
-<td>继承于 Dictionary&lt;K,V&gt;</td>
-</tr>
-</tbody></table>
-<p>Hashtable 的<code>key</code>不能为空，是因为 <code>put()</code>方法里作了判断，为空直接抛出 NPE 异常；而它之所以是线程安全，通过源码可知是因为内部方法都加上了 <code>Synchronize</code>同步锁，但<code>Synchronize</code>是重量级锁，容易引起线程上下文切换而带来线程调度的开销，因此在多线程并发应用中使用是比较少的，推荐使用 ConcurrentHashMap，其采用的是分段锁，效率比 Hashtable 要高出许多（关于锁机制的问题想了解的童鞋们可以自己搜索相关资料学习下）。</p>
-<h3 id="HashMap-死链问题"><a href="#HashMap-死链问题" class="headerlink" title="HashMap 死链问题"></a>HashMap 死链问题</h3><p>HashMap 死链是指在 Java 并发情况下，多线程操作 HashMap 产生 Race Condition(竞用条件)，而此时 HashMap 刚好需要扩容，导致旧数据复制到新数组产生死循环。简单讲就是链表中 A(Entry) 的 next 属性指向 B(Entry)，而 B 的 next 属性又指向 A。</p>
-<p>关于死链具体情况，在<a href="https://coolshell.cn/articles/9606.html" target="_blank" rel="noopener"><font color="blue">左耳朵耗子-陈皓的《疫苗：Java HashMap的死循环》</font></a>这篇里讲解的非常清楚，很清晰易懂，童鞋们可以看看了解，并且死链情况在 Java1.8 中已经得到解决，在 1.8 版本开始，HashMap 的结构就变为了 <strong>数组+链表+红黑树</strong>，后续新篇章也会对 1.8 版本的 HashMap 作下介绍讲解。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后来概括下 HashMap 的工作原理：当通过 <code>put()</code> 方法存值时会调用 <code>key.hashCode()</code> 计算哈希值从而获取数组下标，并将<code>Key-Value</code>作为 Entry&lt;K,V&gt; 对象进行存储，调用<code>get()</code>方法时同样计算<code>key</code>的哈希值然后获取数组下标，然后通过 <code>key.equals()</code>判断值是否相同，最终返回结果。当存值时若元素数量大于阈值<code>threshold</code>则进行扩容，大小为原来的2倍。</p>
-<p>在日常开发中，HashMap 数据结构使用是非常频繁的，而且也是面试经典问题，对于 HashMap 的理解掌握，至关重要！</p>
-]]></content>
-      <tags>
-        <tag>HashMap</tag>
-        <tag>Java 数据结构</tag>
       </tags>
   </entry>
 </search>
