@@ -1,6 +1,266 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>JVM-内存模型</title>
+    <url>/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。</p>
+<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java 虚拟机上运行的字节码(.class)，就可以在多种平台上不加修改地运行。对于 JVM，除了 Oracle，也有其它的开源或闭源实现。（摘自<a href="[https://zh.wikipedia.org/wiki/Java%E8%99%9A%E6%8B%9F%E6%9C%BA](https://zh.wikipedia.org/wiki/Java虚拟机)">维基百科</a>）</p>
+<h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
+<p>学习 JVM，可以围绕四个部分进行：</p>
+<ul>
+<li>类的加载机制</li>
+<li>内存模型</li>
+<li>GC 算法、垃圾回收</li>
+<li>GC 分析、命令调优</li>
+</ul>
+<p>本篇着重于 JVM 内存模型的讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM（OutOfMemoryError）异常到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
+<p>在理解了 JVM 内存模型后，我们就可以知道，平常编写的 Java 文件信息是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
+<h2 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h2><p>Java 程序的开发，并不需要像 C/C++ 开发一样时刻关注内存的释放，而是全权交由 JVM 去管理，JVM 内存模型主要是指运行时内存模型，分为 <strong>线程私有</strong> 和 <strong>线程共享</strong> 数据区两大类：</p>
+<ul>
+<li>线程私有：程序计数器、虚拟机栈、本地方法栈；</li>
+<li>线程共享：Java 堆（Heap）、方法区（包含运行时常量池）。</li>
+</ul>
+<p>线程私有数据区域生命周期与线程相同，依赖用户线程的启动（结束）而创建（销毁）；<br>线程共享数据区域则随虚拟机的启动（关闭）而创建（销毁）。</p>
+<p>JVM 内存模型结构图（<font color="green">绿色</font>共享，<font color="CC6600">橙色</font>私有）：</p>
+<img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg" width="800" height="450" alt="JVM内存结构" align="true">
+
+<h3 id="程序计数器（私有）"><a href="#程序计数器（私有）" class="headerlink" title="程序计数器（私有）"></a>程序计数器（私有）</h3><p>程序计数器是一块较小的内存空间，是当前线程所执行的字节码的行号指示器，每个线程都有一个独立的计数器，互不影响。通过该计数器，JVM 解释器就知道下一步要执行的字节码指令位置，而分支、循环、跳转、异常处理、线程恢复等基础功能也都依赖于该计数器来实现。</p>
+<p>如果线程正在执行的是一个 Java 方法，则计数器记录的是正在执行的虚拟机字节码指令的地址，若为 Native 方法，则计数器的值为空（Undefined），并且该内存区域是唯一一个在虚拟机中没有规定任何 OOM 异常情况的区域。</p>
+<h3 id="虚拟机栈（私有）"><a href="#虚拟机栈（私有）" class="headerlink" title="虚拟机栈（私有）"></a>虚拟机栈（私有）</h3><p>是描述 Java 方法执行的内存模型，每个方法（不含 Native）在执行时都会创建一个栈帧，方法执行过程，就对应着虚拟机栈的入栈到出栈的过程。（现在明白平常用 IDE 调试时点击 Drop Frame 是回退到方法执行前的原因了吧 (●’◡’●)）</p>
+<h4 id="栈帧（Stack-Frame）结构"><a href="#栈帧（Stack-Frame）结构" class="headerlink" title="栈帧（Stack Frame）结构"></a>栈帧（Stack Frame）结构</h4><ul>
+<li>局部变量表</li>
+<li>操作栈</li>
+<li>动态链接</li>
+<li>方法返回地址</li>
+<li>额外附加信息</li>
+</ul>
+<p>栈帧是用来存储数据和部分过程结果的数据结构，同时也被用来处理动态链接、方法返回值和异常分派（Dispatch Exception）。栈帧随着方法调用而创建，随着方法结束而销毁——无论方法是正常完成还是异常完成（抛出了在方法内未被捕获的异常）都算作方法结束。 </p>
+<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域有两种异常：</p>
+<ul>
+<li><strong>StackOverFlowError</strong>：当线程请求栈深度超出虚拟机栈所允许的深度时抛出；</li>
+<li><strong>OutOfMemoryError</strong>：当 JVM 动态扩展到无法申请足够内存时抛出。</li>
+</ul>
+<h3 id="本地方法栈（私有）"><a href="#本地方法栈（私有）" class="headerlink" title="本地方法栈（私有）"></a>本地方法栈（私有）</h3><p>本地方法栈的作用其实与虚拟机栈类似，区别只在于 <strong>本地方法栈是为 Native 方法 服务</strong>，<strong>而虚拟机栈是为 Java 方法 服务</strong>。虚拟机规范中对本地方法栈中的方法使用的语言、方式与数据结构并没有强制规定，因此具体的虚拟机可以自由实现它。有的虚拟机实现也将本地方法栈和虚拟机栈合并，如 HotSpot 虚拟机。</p>
+<p>对于异常抛出规范，也与虚拟机栈相同，分别是 <strong>StackOverFlowError</strong> 和 <strong>OutOfMemoryError</strong>。</p>
+<h3 id="Java-堆（共享）"><a href="#Java-堆（共享）" class="headerlink" title="Java 堆（共享）"></a>Java 堆（共享）</h3><p>Java 堆（Heap）是 JVM 管理的最大的一块内存，也是 GC（Garbage Collection，垃圾收集）的重点照顾对象，存放的是几乎所有的对象实例和数组数据。（JIT 编译器有栈上分配、标量替换等优化技术的实现导致部分对象实例数据不存在 Java 堆，而是栈内存）</p>
+<p>由于主流 JVM 实现对于 GC 采用分代收集算法，因此从 GC 角度来看，Java 堆可分为：</p>
+<ul>
+<li>新生代（Eden 区、From Servivor 区、To Servivor 区）</li>
+<li>老年代</li>
+</ul>
+<p>可以简单的理解新生代主要是存放新创建的对象，而老年代则是存放生命周期或存活时间较长的对象。并且 JVM 在新生代的 Eden 区开辟了一小块内存区域，即 <strong>分配缓冲区（TLAB - Thread-local allocation buffer，线程私有）</strong>，因为 Java 程序中很多对象都是小对象且用过即丢，不存在线程共享和适合被快速 GC ，所以小对象通常会被 JVM 优先分配在 TLAB 上，好处是分配内存效率高。</p>
+<p>（<font color="red">PS：</font>这一部分细节涉及到 JVM GC 的知识内容，所以只是粗略介绍新生代和老年代，后续将会新开一篇专门讲解 GC 的文章，也算是挖个小坑，督促自己再接再厉 O(∩_∩)O 。）</p>
+<h4 id="异常（Exception）-1"><a href="#异常（Exception）-1" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
+<h3 id="方法区（共享）"><a href="#方法区（共享）" class="headerlink" title="方法区（共享）"></a>方法区（共享）</h3><p>方法区主要存放的是虚拟机加载的类信息、常量、静态变量、编译器编译后的代码等，而 GC 在此区域出现频率较低，主要针对的是常量池的回收和类型的卸载，GC 不会在主程序运行期对方法区进行清理，所以容易随着加载的 Class 增多导致类膨胀，从而引发 <strong>OutOfMemoryError</strong> 异常。</p>
+<p>方法区也常被称为<strong>“永久代（Permanent Generation）”</strong>，这是因为 <strong>HotSpot 虚拟机（Sun JDK 和 Open JDK 自带的虚拟机实现）</strong>的设计团队选择把 GC 分代收集扩展至方法区（也可以理解为是用永久代方法实现了方法区），从而在 GC 方面与 Java 堆保持一致。</p>
+<p>在 Java 8 后，永久代则被替换为<strong>“元空间（Metaspace）”</strong>，当然了，后者依然是基于 HotSpot 虚拟机，两者区别主要在于：<strong>元空间并不在虚拟机中，而是使用本地内存</strong>。因此元空间的大小仅受本地内存限制，基本不存在 OOM 异常问题。并且类的元数据放入本地内存，字符串池和静态变量等则放入到 Java 堆中。</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>作为方法区的一部分，用于存放编译期生产的各种字面量和符号引用，运行时常量池除了编译期产生的 Class 文件的常量池，还可以在运行期间，将新的常量加入常量池，比如 String 类的 intern() 方法。该区域不会抛出 <strong>OutOfMemoryError</strong> 异常。</p>
+<ul>
+<li>字面量：与 Java 语言层面的常量概念相近，包含文本字符串、声明为 final 的常量值等；</li>
+<li>符号引用：编译语言层面的概念，包括以下三类：<ol>
+<li>类和接口的全限定名；</li>
+<li>字段的名称和描述符；</li>
+<li>方法的名称和描述符。</li>
+</ol>
+</li>
+</ul>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>关于堆、栈内存的大小设置，可以通过 IDE（IDEA、Eclipse）或 Web 容器（Tomcat ）等来配置，可通过下图来了解参数所控制的区域分别是什么。</p>
+<p><img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/Heap.png" alt="堆栈参数设置参照图"></p>
+<p>参数控制：</p>
+<ul>
+<li>-Xms：设置堆的最小空间大小；</li>
+<li>-Xmx：设置堆的最大空间大小；</li>
+<li>-XX:NewSize：设置新生代最小空间大小；</li>
+<li>-XX:MaxNewSize：设置新生代最大空间大小；</li>
+<li>-XX:PermSize：设置永久代最小空间大小；（JDK 8 后无效）</li>
+<li>-XX:MaxPermSize：设置永久代最大空间大小；（JDK 8 后无效）</li>
+<li>-XX:MetaspaceSize：设置元空间最小空间大小；（JDK 8 后有效）</li>
+<li>-XX:MaxMetaspaceSize：设置元空间最大空间大小；（JDK 8 后有效）</li>
+<li>-Xss：设置每个线程的堆栈大小。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇主要讲解 JVM 内存结构及其概念，意在让大伙了解 JVM 结构是个什么样子，而了解 JVM 是如何管理内存、如何处理 Java 程序运行所产生的数据，可以启发我们在内存管理、性能分析和调优方面的思维，后续文章将会更深入于 JVM 的其它功能原理。</p>
+<p>作为 Java 开发者，想要强化个人的技术，扩展自己的思维，JVM 是一道必须攻破的关卡。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p>《<a href="https://book.douban.com/subject/6522893/" target="_blank" rel="noopener"><font color="blue">深入理解Java虚拟机</font></a>》第2章 / 周志明 / 机械工业出版社<br>《<a href="https://book.douban.com/subject/26418340/" target="_blank" rel="noopener"><font color="blue">Java虚拟机规范</font></a>》/ 作者:Tim Lindholm、Frank Yellin 等 / 译者:爱飞翔、周志明等 / 机械工业出版社<br>技术博客：<a href="https://www.fangzhipeng.com/javainterview/2019/04/09/jmm.html" target="_blank" rel="noopener"><font color="blue">Java 虚拟机：JVM 内存模型</font></a>，作者：<a href="https://www.fangzhipeng.com/" target="_blank" rel="noopener"><font color="blue">方志朋</font></a></p>
+</blockquote>
+<h2 id="花絮"><a href="#花絮" class="headerlink" title="花絮"></a>花絮</h2><p>本篇是 JVM 系列文章的第一篇，也是我第一次编写的技术博客，之所以以 JVM 知识为开头，也是因为对于 JVM 的内容一直都是仅凭记忆，就导致容易遗忘，而且很多知识点都是零零散散，没有连结成知识网，也没有做一些知识记录（好像暴露了我懒(ˉ▽￣～) ），加上本人也想通过搭建一个博客网站，来总结自己一路学习的技术和知识，并分享给别人，因此便有了这个开头。</p>
+<p>博客的编写，尤其是技术类，要考虑的细节还是挺多，如技术原理、常用实现方式、个人实际使用经验、流行程度、更新迭代等。总的来说，这对于我个人的知识总结能力也大有脾益，对一门新技术，我崇尚的是从不会、到了解掌握、再到能讲解给别人听让别人理解。</p>
+<p>路漫漫其修远兮，吾将上下而求索。万事不急，坐下喝杯 Java，咱慢慢学。♪(^∇^*)</p>
+]]></content>
+      <tags>
+        <tag>Java 虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java 8 中 HashMap 的改变</title>
+    <url>/2020/08/09/jdk1-8%E4%B8%AD-hashmap-%E7%9A%84%E6%94%B9%E8%BF%9B/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在 <a href="https://yudi-corgi.github.io/2020/07/19/聊聊-hashmap/#more"><font color="blue">聊聊HashMap篇</font></a> 中，通过 JDK1.7 的 HashMap 的几个方法：<code>put()、get()、resize()/transfer()</code> 讲解了其原理，在最后简单描述了 HashMap 死链问题。引出了在 Java 8 中，HashMap 底层结构变化为 <strong>数组+链表+红黑树</strong>，提高了查询效率，并解决了死链问题。我们就以此作为切入点，来看看 HashMap 在 Java 8 版本有了哪些变化。</p>
+<h2 id="死链原因和解决方法"><a href="#死链原因和解决方法" class="headerlink" title="死链原因和解决方法"></a>死链原因和解决方法</h2><p>Java 8 之前的 HashMap 并发扩容出现死链，原因之一是链表节点的存储方式引起，即 <strong>头插法</strong>。每当添加新元素时，都是放在链表头节点，原头节点就变成新节点的 next 节点。这就导致了并发扩容时，若链表元素 rehash 后依旧在同一个数组下标位置，则链表元素会出现逆序（或翻转），即 A-B-C 变成 C-B-A。另一个是因为复制数据是在 while 循环里遍历一个节点就插入到新的数组位置，假设有两个线程，线程一获取到 A 节点以及下一节点 B 后就被阻塞，而线程二直接完成了扩容操作，链表变成 C-B-A，当线程一恢复运行后，B 的下一节点又变成 A，死链就出现了。再次贴上复制数据的方法源码，方便大家回顾：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JDK 7 源码</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">transfer</span><span class="params">(Entry[] newTable, <span class="keyword">boolean</span> rehash)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> newCapacity = newTable.length;</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e : table) &#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">null</span> != e) &#123;</span><br><span class="line">            Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">            <span class="keyword">if</span> (rehash) &#123;</span><br><span class="line">                e.hash = <span class="keyword">null</span> == e.key ? <span class="number">0</span> : hash(e.key);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> i = indexFor(e.hash, newCapacity); </span><br><span class="line">            e.next = newTable[i];</span><br><span class="line">            newTable[i] = e;</span><br><span class="line">            e = next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而在 Java 8 中则更改为 <strong>尾插法</strong>，即添加的新元素会放在链表尾节点，这样在扩容时就不会出现元素逆序的情况，并且在扩容方法的 while 循环复制数据中，是将索引下标处的链表节点全部遍历获取后，再存入到新数组中，这样就避免了死链问题。关于其逻辑实现在下面会讲到，可以先看下图简单对比头插法和尾插法：</p>
+<img src="/2020/08/09/jdk1-8%E4%B8%AD-hashmap-%E7%9A%84%E6%94%B9%E8%BF%9B/HashMap链表.jpg" alt="HashMap链表" width="700" height="530">
+
+<h2 id="结构变化"><a href="#结构变化" class="headerlink" title="结构变化"></a>结构变化</h2><p>Java 8 中，HashMap 底层结构变为 <strong>数组+链表+红黑树</strong>，显著提高了查询效率。在 HashMap 中，获取元素可以简单分为以下两步：</p>
+<ul>
+<li>根据 <code>key.hashCode()</code> 获取 hash 值，然后确定数组下标 index；</li>
+<li>若数组下标位置节点 <code>key</code>  不匹配，则遍历链表，通过 <code>key.equals()</code> 查找。</li>
+</ul>
+<p>在 Java 8 之前只是用链表解决冲突问题，在发生碰撞问题时，这两步获取元素的时间复杂度为 O(1)+O(n)。因此，当碰撞频率高时 n 变大，查询速度就会受到影响。在 Java 8 中则利用红黑树替代链表，而红黑树是一种自平衡的二叉查找树，如此一来，获取元素的时间复杂度就变为 O(1)+O(log n)，在 n 变大时，能够理想地解决查询效率变低的问题。</p>
+<h3 id="链表与红黑树转换时机"><a href="#链表与红黑树转换时机" class="headerlink" title="链表与红黑树转换时机"></a>链表与红黑树转换时机</h3><p>当发生哈希碰撞时，首先用链表存储，当链表节点数量大于等于 8 时，就会转换为红黑树，而一旦节点数量小于等于 6，红黑树又会转换为链表。当节点数量达到 8 时，红黑树的平均查找时间为 3(log 8)，而链表则为 4(8/2)，这才有了转换的必要。而选择 6 和 8，中间存在差值 7，是假设当链表长度大于小于 8 时，红黑树和链表就互相转换，若 HashMap 存储的元素数量在 8 徘徊，频繁增删，红黑树和链表就会频繁转换，效率将会降低。 </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>; <span class="comment">//HashMap 默认的转换为红黑树的节点阈值</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>; <span class="comment">// 默认的转换为链表的节点阈值</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="原理解析"><a href="#原理解析" class="headerlink" title="原理解析"></a>原理解析</h2><h3 id="Node-lt-K-V-gt-和-TreeNode-lt-K-V-gt"><a href="#Node-lt-K-V-gt-和-TreeNode-lt-K-V-gt" class="headerlink" title="Node&lt;K,V&gt;  和 TreeNode&lt;K,V&gt;"></a>Node&lt;K,V&gt;  和 TreeNode&lt;K,V&gt;</h3><p>在 Java 8 之前，<code>key-value</code> 是用 <code>Entry&lt;K,V&gt;</code> 对象保存，Java 8 中则变为 <code>Node&lt;K,V&gt;</code>，但其内部方法实现基本相同，依旧实现 <code>Map.Entry&lt;K,V&gt;</code> 接口，下面是源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> hash;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Node&lt;K,V&gt; next;</span><br><span class="line">    Node(<span class="keyword">int</span> hash, K key, V value, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        <span class="keyword">this</span>.hash = hash;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">        <span class="keyword">this</span>.value = value;</span><br><span class="line">        <span class="keyword">this</span>.next = next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...其它代码省略...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>重要的是内部静态类增加了 <code>TreeNode&lt;K,V&gt;</code>，该类也就是红黑树节点对象，在下面源码中，<code>TreeNode&lt;K,V&gt;</code> 类是继承 <code>LinkedHashMap.Entry&lt;K,V&gt;</code> 类，而进入该类，可以看到其实也是继承 <code>HashMap.Node&lt;K,V&gt;</code> 类，并含有 <code>before、after</code>两个属性，但 <code>TreeNode&lt;K,V&gt;</code> 本身并没有直接使用到这两个属性，只是维护了双向链表的应用，便于在红黑树和链表之间进行转换：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeNode</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">LinkedHashMap</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    TreeNode&lt;K,V&gt; parent;  <span class="comment">// 红黑树根节点</span></span><br><span class="line">    TreeNode&lt;K,V&gt; left;    <span class="comment">// 左节点</span></span><br><span class="line">    TreeNode&lt;K,V&gt; right;   <span class="comment">// 右节点</span></span><br><span class="line">    TreeNode&lt;K,V&gt; prev;    <span class="comment">// 当前节点的前一节点</span></span><br><span class="line">    <span class="keyword">boolean</span> red;           <span class="comment">// 是否为红色节点</span></span><br><span class="line">    TreeNode(<span class="keyword">int</span> hash, K key, V val, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        <span class="keyword">super</span>(hash, key, val, next);  <span class="comment">// 调用父类的构造方法</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...其它代码省略...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// LinkedHashMap.Entry&lt;K,V&gt; 的实现</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">HashMap</span>.<span class="title">Node</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    Entry&lt;K,V&gt; before, after;</span><br><span class="line">    Entry(<span class="keyword">int</span> hash, K key, V value, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        <span class="keyword">super</span>(hash, key, value, next);  <span class="comment">// 调用父类 HashMap.Node&lt;K,V&gt; 的构造方法</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="put-方法"><a href="#put-方法" class="headerlink" title="put() 方法"></a>put() 方法</h3><p>我们依旧从 <code>put()</code> 方法开始，直接上源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1、获取 key 的 Hash 值</span></span><br><span class="line">    <span class="keyword">return</span> putVal(hash(key), key, value, <span class="keyword">false</span>, <span class="keyword">true</span>);  </span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">final</span> V <span class="title">putVal</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">boolean</span> onlyIfAbsent,<span class="keyword">boolean</span> evict)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="keyword">int</span> n, i;</span><br><span class="line">    <span class="comment">// 2、判断 table 是否为空，为空则创建</span></span><br><span class="line">    <span class="keyword">if</span> ((tab = table) == <span class="keyword">null</span> || (n = tab.length) == <span class="number">0</span>)  </span><br><span class="line">        n = (tab = resize()).length;</span><br><span class="line">    <span class="comment">// 3、计算数组下标，判断该位置是否为空，为空直接添加</span></span><br><span class="line">    <span class="keyword">if</span> ((p = tab[i = (n - <span class="number">1</span>) &amp; hash]) == <span class="keyword">null</span>)  </span><br><span class="line">        tab[i] = newNode(hash, key, value, <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        Node&lt;K,V&gt; e; K k;</span><br><span class="line">        <span class="comment">// 4、判断 hash 值和 key 是否相同，相同赋值给 e</span></span><br><span class="line">        <span class="keyword">if</span> (p.hash == hash &amp;&amp; ((k = p.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            e = p;</span><br><span class="line">        <span class="comment">// 5、若为树节点，执行 putTreeVal() 添加</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)  </span><br><span class="line">            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(<span class="keyword">this</span>, tab, hash, key, value);</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 6、遍历链表，尾插法</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> binCount = <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">                <span class="comment">// 6.1、next 节点为空直接添加</span></span><br><span class="line">                <span class="keyword">if</span> ((e = p.next) == <span class="keyword">null</span>) &#123;  </span><br><span class="line">                    p.next = newNode(hash, key, value, <span class="keyword">null</span>); </span><br><span class="line">                    <span class="comment">// 6.2、当链表节点数量 &gt;= 8 则转换为红黑树</span></span><br><span class="line">                    <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">                        treeifyBin(tab, hash);  </span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 6.3、next 节点不为空，则判断是否与当前遍历节点相同</span></span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp; </span><br><span class="line">                    ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                p = e;  </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 7、e 不为空则进行覆盖并返回旧值</span></span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123; <span class="comment">// existing mapping for key</span></span><br><span class="line">            V oldValue = e.value;</span><br><span class="line">            <span class="comment">// 7.1、onlyIfAbsent 表示是否覆盖已存在的值</span></span><br><span class="line">            <span class="comment">// put()默认传递 false 覆盖， putIfAbsent()传递 true 不覆盖</span></span><br><span class="line">            <span class="keyword">if</span> (!onlyIfAbsent || oldValue == <span class="keyword">null</span>)</span><br><span class="line">                e.value = value;</span><br><span class="line">            afterNodeAccess(e);</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ++modCount;</span><br><span class="line">    <span class="keyword">if</span> (++size &gt; threshold)   <span class="comment">// 8、判断是否超过阈值，超过则扩容 </span></span><br><span class="line">        resize();</span><br><span class="line">    afterNodeInsertion(evict);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结下步骤：</p>
+<ol>
+<li>获取 <code>key</code> 的 hash 值，然后进入 <code>putVal()</code> 方法，若 table 为空则先创建；</li>
+<li>计算数组下标，判断下标处元素，若为空直接新增，不为空先判断 <code>key.equals(k)</code> ；</li>
+<li>不同说明发生碰撞，判断是否为树节点，是则调用 <code>putTreeVal()</code> 新增树节点；</li>
+<li>若是链表节点，则遍历到链表尾部判断，当节点不存在则新增（尾插法）；</li>
+<li>如果链表长度大于等于 <code>TREEIFY_THRESHOLD</code>，就将链表转换为红黑树；</li>
+<li>若节点已经存在,则替换旧值 <code>oldValue</code> 并返回；</li>
+<li>最后判断容量若大于阈值，就进行扩容 <code>resize()</code>。</li>
+</ol>
+<h3 id="get-方法"><a href="#get-方法" class="headerlink" title="get() 方法"></a>get() 方法</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="keyword">return</span> (e = getNode(hash(key), key)) == <span class="keyword">null</span> ? <span class="keyword">null</span> : e.value;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title">getNode</span><span class="params">(<span class="keyword">int</span> hash, Object key)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; <span class="keyword">int</span> n; K k;</span><br><span class="line">    <span class="comment">// 1、获取数组下标位置第一个节点，命中则直接返回</span></span><br><span class="line">    <span class="keyword">if</span> ((tab = table) != <span class="keyword">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">        (first = tab[(n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (first.hash == hash &amp;&amp; <span class="comment">// always check first node</span></span><br><span class="line">            ((k = first.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            <span class="keyword">return</span> first;</span><br><span class="line">        <span class="comment">// 2、若为树节点则调用 getTreeNode() 去获取</span></span><br><span class="line">        <span class="keyword">if</span> ((e = first.next) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (first <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                <span class="keyword">return</span> ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);</span><br><span class="line">            <span class="comment">// 4、若为链表则遍历判断</span></span><br><span class="line">            <span class="keyword">do</span> &#123;  </span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                    ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>获取元素的逻辑还是比较简单，步骤如下：</p>
+<ol>
+<li>计算 <code>key</code>的 hash 值找到数组下标，若下标处第一个节点匹配则返回；</li>
+<li>若有冲突，判断是树节点还是链表节点，然后通过 <code>key.equals(k)</code> 查找匹配的节点。</li>
+</ol>
+<h3 id="Hash-方法"><a href="#Hash-方法" class="headerlink" title="Hash()  方法"></a>Hash()  方法</h3><p>在新增和获取过程中，计算下标时，先对 key 的哈希值进行 hash 操作，再进一步计算下标，如下图所示：</p>
+<img src="/2020/08/09/jdk1-8%E4%B8%AD-hashmap-%E7%9A%84%E6%94%B9%E8%BF%9B/hash().jpg" alt="HashMap链表" width="600">
+
+<p>对 <code>key.hashCode()</code> 的 hash 操作实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="keyword">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 计算下标方式：(n-1) &amp; hash</span></span><br></pre></td></tr></table></figure>
+
+<p>在 Java 8 之前原本是直接 &amp; 运算获取下标，但一般情况下 hashMap 长度都小于 2^16，这就导致 &amp; 运算的一直是哈希值的低 16 位甚至更低，假设长度为 16，则下标运算的结果取决于哈希值的低 4 位（即长度为 2 的 n 次方，位运算结果取决于低 n 位）。为了让哈希值的低 16 位更随机，便让哈希值与高 16 位（h &gt;&gt;&gt; 16）进行异或运算，以让低 16 位更随机散列，减少碰撞。</p>
+<h3 id="resize-方法"><a href="#resize-方法" class="headerlink" title="resize() 方法"></a>resize() 方法</h3><p>在 <code>resize()</code> 方法上有这么一段注释：</p>
+<blockquote>
+<p>Initializes or doubles table size. If null, allocates in accord with  initial capacity target held in field threshold. Otherwise, because we  are using power-of-two expansion, the elements from each bin must either stay at same index, or move with a power of two offset in the new  table.</p>
+</blockquote>
+<p>其意思大概就是初始化或增加数组大小，如果数组本就为空，则按默认值进行初始化，否则，因为使用的是 2 次幂扩展（即原来大小的 2 倍），元素存放在新数组要么是原位置，要么是原位置加上 2 次幂。搭配一张图来看就会很好理解：</p>
+<img src="/2020/08/09/jdk1-8%E4%B8%AD-hashmap-%E7%9A%84%E6%94%B9%E8%BF%9B/hashMap扩容.jpg" alt="hashMap扩容" width="700">
+
+<p>因为扩容为 <code>n &lt;&lt; 1</code>，即 2 倍，所以 n-1 就是在高位多 1 bit（<font color="red">红色</font>），若多出的高位 bit 经过 &amp; 运算为 1，则元素 index 变为 <strong>原索引+原数组容量(即 2 次幂)，为 0 则不需要变化</strong>。因此扩容时不需要重新计算 hash 值，只需要在 <strong>原 hash 值跟原数组长度 &amp; 运算</strong> 后判断是否等于 0 来确定是否需要移动即可。举个例子，假设数组长度原本是 16，<code>n(16) -1 = 0000 1111，n(16) = 0001 0000</code>，因为扩容后 <code>n(32)-1 = 0001 1111</code>，高位多 1 bit ，所以直接同 16 进行 &amp; 运算效果相当于只跟高位 bit 进行位运算，如下图：</p>
+<img src="/2020/08/09/jdk1-8%E4%B8%AD-hashmap-%E7%9A%84%E6%94%B9%E8%BF%9B/高位与运算.jpg" alt="高位与运算" width>
+
+<p>我们来看下 <code>resize()</code> 方法的源码，在 6.3 处就体现了上面说的元素是否需要移动的判断：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt;[] resize() &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] oldTab = table;</span><br><span class="line">    <span class="keyword">int</span> oldCap = (oldTab == <span class="keyword">null</span>) ? <span class="number">0</span> : oldTab.length;</span><br><span class="line">    <span class="keyword">int</span> oldThr = threshold;</span><br><span class="line">    <span class="keyword">int</span> newCap, newThr = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (oldCap &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 1、若是超过最大值，则不扩容，任由其碰撞了</span></span><br><span class="line">        <span class="keyword">if</span> (oldCap &gt;= MAXIMUM_CAPACITY) &#123;</span><br><span class="line">            threshold = Integer.MAX_VALUE;</span><br><span class="line">            <span class="keyword">return</span> oldTab;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 2、不超过最大值则扩容为原来的 2 倍</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ((newCap = oldCap &lt;&lt; <span class="number">1</span>) &lt; MAXIMUM_CAPACITY </span><br><span class="line">                 &amp;&amp; oldCap &gt;= DEFAULT_INITIAL_CAPACITY)</span><br><span class="line">            newThr = oldThr &lt;&lt; <span class="number">1</span>; <span class="comment">// double threshold</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 3、若无数据，则用初始化阈值赋值</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (oldThr &gt; <span class="number">0</span>) <span class="comment">// initial capacity was placed in threshold</span></span><br><span class="line">        newCap = oldThr;</span><br><span class="line">    <span class="comment">// 4、若无数据并且阈值为 0，则使用默认值设置</span></span><br><span class="line">    <span class="keyword">else</span> &#123;               <span class="comment">// zero initial threshold signifies using defaults</span></span><br><span class="line">        newCap = DEFAULT_INITIAL_CAPACITY;</span><br><span class="line">        newThr = (<span class="keyword">int</span>)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 5、若新数组未设置阈值，则进入此处计算新的 threshold</span></span><br><span class="line">    <span class="keyword">if</span> (newThr == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">float</span> ft = (<span class="keyword">float</span>)newCap * loadFactor;</span><br><span class="line">        newThr = (newCap &lt; MAXIMUM_CAPACITY &amp;&amp; </span><br><span class="line">                  ft &lt; (<span class="keyword">float</span>)MAXIMUM_CAPACITY ? (<span class="keyword">int</span>)ft : Integer.MAX_VALUE);</span><br><span class="line">    &#125;</span><br><span class="line">    threshold = newThr;</span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(&#123;<span class="string">"rawtypes"</span>,<span class="string">"unchecked"</span>&#125;)</span><br><span class="line">    Node&lt;K,V&gt;[] newTab = (Node&lt;K,V&gt;[])<span class="keyword">new</span> Node[newCap];</span><br><span class="line">    table = newTab;</span><br><span class="line">    <span class="keyword">if</span> (oldTab != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 6、遍历旧数组复制数据</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; oldCap; ++j) &#123;</span><br><span class="line">            Node&lt;K,V&gt; e;</span><br><span class="line">            <span class="keyword">if</span> ((e = oldTab[j]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                oldTab[j] = <span class="keyword">null</span>;</span><br><span class="line">                <span class="comment">// 6.1、若当前节点没有冲突，则计算新的数组下标直接存值</span></span><br><span class="line">                <span class="keyword">if</span> (e.next == <span class="keyword">null</span>)</span><br><span class="line">                    newTab[e.hash &amp; (newCap - <span class="number">1</span>)] = e;</span><br><span class="line">                <span class="comment">// 6.2、若为树节点，则调用 TreeNode.split()</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (e <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                    ((TreeNode&lt;K,V&gt;)e).split(<span class="keyword">this</span>, newTab, j, oldCap);</span><br><span class="line">                <span class="keyword">else</span> &#123; <span class="comment">// preserve order</span></span><br><span class="line">                    <span class="comment">// 6.3、以下部分是遍历链表节点进行复制，并判断节点在新数组的位置</span></span><br><span class="line">                    <span class="comment">// loHead：不需要改变位置的链表头节点，hiHead：需要改变位置的链表头节点</span></span><br><span class="line">                    <span class="comment">// loTail 和 hiTail 则是对应链表尾节点</span></span><br><span class="line">                    Node&lt;K,V&gt; loHead = <span class="keyword">null</span>, loTail = <span class="keyword">null</span>; </span><br><span class="line">                    Node&lt;K,V&gt; hiHead = <span class="keyword">null</span>, hiTail = <span class="keyword">null</span>; </span><br><span class="line">                    Node&lt;K,V&gt; next;</span><br><span class="line">                    <span class="keyword">do</span> &#123;</span><br><span class="line">                        next = e.next;</span><br><span class="line">                        <span class="comment">// 6.3.1、为 0 说明原索引位置存值</span></span><br><span class="line">                        <span class="keyword">if</span> ((e.hash &amp; oldCap) == <span class="number">0</span>) &#123;</span><br><span class="line">                            <span class="keyword">if</span> (loTail == <span class="keyword">null</span>)</span><br><span class="line">                                <span class="comment">// 6.3.2、尾节点为空，则链表为空，头节点指向当前遍历节点 e(仅第一次)</span></span><br><span class="line">                                loHead = e;  </span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                <span class="comment">// 6.3.3、尾节点不为空，则链表存在，将尾节点指向当前遍历节点 e</span></span><br><span class="line">                                loTail.next = e;  </span><br><span class="line">                            <span class="comment">// 6.3.4、将尾节点指向当前遍历节点 e</span></span><br><span class="line">                            loTail = e; </span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="comment">// 6.3.5、不为 0 说明新位置是原索引 + oldCap(旧容量)</span></span><br><span class="line">                        <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="comment">// 与上面同理</span></span><br><span class="line">                            <span class="keyword">if</span> (hiTail == <span class="keyword">null</span>)</span><br><span class="line">                                hiHead = e;</span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                hiTail.next = e;</span><br><span class="line">                            hiTail = e;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">while</span> ((e = next) != <span class="keyword">null</span>);</span><br><span class="line">                    <span class="comment">// 6.3.6、判断两个尾节点，不为空说明链表存在，将头节点保存在相应位置</span></span><br><span class="line">                    <span class="keyword">if</span> (loTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        loTail.next = <span class="keyword">null</span>;</span><br><span class="line">                        newTab[j] = loHead;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (hiTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        hiTail.next = <span class="keyword">null</span>;</span><br><span class="line">                        newTab[j + oldCap] = hiHead;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newTab;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>扩容方法实现逻辑重点在于复制数据的 for 循环中，简单分为以下几步：</p>
+<ol>
+<li>若当前遍历的节点元素位置没有冲突，则直接计算新的数组下标存值；</li>
+<li>若为树节点，调用 <code>TreeNode.split()</code> 方法进行具体操作；</li>
+<li>若为链表节点则进行遍历，通过元素原 hash 值与旧数组长度 &amp; 运算判断位置是否需要移动，采用两个头节点和两个尾节点保存元素构成链表，再将链表头节点存放到新数组的相应位置。</li>
+</ol>
+<h3 id="关于红黑树"><a href="#关于红黑树" class="headerlink" title="关于红黑树"></a>关于红黑树</h3><p>在上面内容中，基本侧重于 HashMap 整体的实现逻辑描述，而红黑树相关的内容，如新增树节点、链表红黑树互转等则讲解不多。主要是因为红黑树结构、以及树节点平衡被打破后的处理情况等内容比较复杂，讲解起来会很啰嗦冗余，而且对不了解红黑树的童鞋会很不友好。此处附上文章：<a href="https://mp.weixin.qq.com/s?__biz=MzIxMjE5MTE1Nw==&mid=2653204996&idx=2&sn=ecf932d2db8cb6e4fcb841a2b6a5bfba&chksm=8c99c0debbee49c86dc8e82a2d195389a93e81d8e5ca8af7d4dd2eec5c7fe209038c91444964&mpshare=1&scene=24&srcid=07284ysfV7Mf8UMWAqao5q2v&sharer_sharetime=1595941410657&sharer_shareid=2106bba09b5abfc873194b5d55f67e10&ascene=1&devicetype=Windows+10+x64&version=62090529&nettype=WIFI&abtest_cookie=AAACAA%3D%3D&lang=zh_CN&exportkey=A0RsTpy5SHJ9BqYDO0u%2B%2BzY%3D&pass_ticket=oZfz1KLaWxt08jIutur8xfCm%2FcOmg9fMk3u3G8h4kj3Cyu3oeS6Sqm%2FrsLy5pYtL&wx_header=1&key=a7754f0084d81be84097902b44c6d4489e89fd86ebc21cee5cf9715c7f6b1d393d9a25f294ea9d726b9a2e3cd9fa11e7a607080729363427c9171742dae8a1f92742904f9baaf5effb092c8ed7362e7c&uin=MjUwNjQ0NzYxOQ%3D%3D" target="_blank" rel="noopener"><font color="blue">程序员小灰 - 什么是红黑树</font></a>，童鞋们可以先学习下红黑树的相关知识（已会可忽略），结合上面对于 HashMap 的原理解析，再去查看关于红黑树操作的源码，理解起来就会比较轻松了 (●ˇ∀ˇ●) 。</p>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p>Java 8 HashMap 原理宏观上跟以前的思路差不多，主要是在新增、获取、删除元素和扩容等方法增加了对红黑树节点的判断，重要的变化可以简单归纳为：<strong>底层结构新增红黑树、链表存储方式变为尾插法，hash() 方法优化</strong>。而这些改变对 HashMap 性能提升影响是比较大的，在《<strong>Java 8：HashMap 的性能提升</strong>》一文中含有性能测试的结果。</p>
+<p>在实际开发中，HashMap 使用是非常频繁的，掌握原理，有助于我们在使用时，若遇到异常 Bug，可以快速定位、解决问题，并且 HashMap 也是面试经典问题哟。</p>
+]]></content>
+      <tags>
+        <tag>HashMap</tag>
+        <tag>Java 数据结构</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>JVM-类加载机制</title>
+    <url>/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<p>在 <a href="https://yudi-corgi.github.io/2020/07/08/JVM-内存模型/"><font color="blue">JVM-内存模型</font></a> 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。</p>
+<h2 id="什么是类的加载"><a href="#什么是类的加载" class="headerlink" title="什么是类的加载"></a>什么是类的加载</h2><p>类的加载指的是将类的 <code>.class</code> 文件中的二进制数据读入到内存中，将其放在 JVM 运行时数据区的方法区内，然后在堆区创建一个<code>java.lang.Class</code>对象，用来封装类在方法区内的数据结构。类的加载的最终结果是位于堆区中的 Class 对象，Class 对象封装了类在方法区内的数据结构，并提供了访问方法区内的数据结构的接口。</p>
+<p>我们可以简单看张图理解下：</p>
+<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/jvm类加载.jpg" alt="JVM类加载" align="center">
+
+<p>从图片我们知道，类加载完毕后，类的数据全部都存放在 JVM 的方法区，堆区只是提供了一个入口去调用相应的对象数据，比如 <code>Class.newInstance()</code>，所以到这里，我们也能理解为什么 Java 对象都存放在堆区的原因。</p>
+<p>类加载器并不需要等到某个类被“首次主动使用”时再加载它，JVM 规范允许类加载器在预料某个类将要被使用时就预先加载它，如果在预先加载的过程中遇到了 <code>.class</code> 文件缺失或存在错误，类加载器必须在程序首次主动使用该类时才报告错误（LinkageError 错误），如果这个类一直没有被程序主动使用，那么类加载器就不会报告错误。（此段引用于 <a href="http://www.ityouknow.com/jvm/2017/08/19/class-loading-principle.html" target="_blank" rel="noopener">纯洁的微笑-Java 类加载机制</a>）</p>
+<h2 id="类的加载过程"><a href="#类的加载过程" class="headerlink" title="类的加载过程"></a>类的加载过程</h2><p>如下图所示，JVM 类加载主要经历五个部分：加载、连接、初始化、使用、卸载。接下来一一讲解每个部分都做了什么。</p>
+<p><img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.jpg" alt="类加载过程"></p>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>加载是类加载过程的第一个阶段，主要是查找并加载类的二进制数据，而这一阶段也就会在堆区生成一个 <code>java.lang.Class</code> 对象，作为入口用于访问该对象在方法区里的数据结构。而且这一步也是可控的，我们可以使用默认的类加载器，也可以自定义类加载器对 Java 文件进行加载（关于 <a href="#jump">类加载器</a> 👈下面有做简单介绍）。</p>
+<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>连接细化分下来，其实有三步，分别为以下三个部分：</p>
+<h4 id="验证：确保被加载的类的正确性"><a href="#验证：确保被加载的类的正确性" class="headerlink" title="验证：确保被加载的类的正确性"></a>验证：确保被加载的类的正确性</h4><p>这是连接的第一步，判断当前 Class 文件的字节流信息是否符合当前 JVM 规范要求，大致会进行以下四个部分的验证：</p>
+<ul>
+<li>文件格式验证：验证字节流是否符合 Class 文件格式的规范</li>
+<li>元数据验证：对字节码描述的信息进行语义分析，以保证其描述的信息符合 Java 语言规范的要求</li>
+<li>字节码验证：通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的</li>
+<li>符号引用验证：确保”解析”动作能正确执行</li>
+</ul>
+<h4 id="准备：为类的静态变量分配内存，并将其初始化为默认值"><a href="#准备：为类的静态变量分配内存，并将其初始化为默认值" class="headerlink" title="准备：为类的静态变量分配内存，并将其初始化为默认值"></a>准备：为类的静态变量分配内存，并将其初始化为默认值</h4><p>这一步主要是在方法区中为类变量分配内存，并初始化类变量的值。</p>
+<p>比如声明如下，<code>value</code> 的值在准备阶段会被初始化为 0，而不是 80，即数据类型的默认初始值，实际值的初始化会在 <strong>初始化</strong> 阶段（下面会讲到）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">80</span>;</span><br></pre></td></tr></table></figure>
+
+<p>但如果是下面的声明方式，则会直接赋值为 8080，在编译阶段会为 <code>value</code> 生成 ConstantValue 属性，并在准备阶段赋值为 8080：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> value = <span class="number">8080</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="解析：把常量池内的符号引用转换为直接引用"><a href="#解析：把常量池内的符号引用转换为直接引用" class="headerlink" title="解析：把常量池内的符号引用转换为直接引用"></a>解析：把常量池内的符号引用转换为直接引用</h4><p>主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符七类符号引用，符号引用类型常见如下：</p>
+<ul>
+<li>CONSTANT_Class_info</li>
+<li>CONSTANT_Field_info</li>
+<li>CONSTANT_Method_info</li>
+</ul>
+<p><strong>符号引用</strong>：一组符号来描述目标，可以是任何字面量，它与虚拟机实现的布局无关，引用的目标并不一定要已经加载到内存中。各种虚拟机实现的内存布局可以各不相同，但是它们能接受的符号引用必须是一致的，因为符号引用的字面量形式明确定义在 Java 虚拟机规范的 Class 文件格式中。</p>
+<p><strong>直接引用</strong>：就是直接指向目标的指针、相对偏移量或一个间接定位到目标的句柄，当有了直接引用，就说明引用的目标在内存已经存在。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>为类的静态变量赋予正确的初始值，JVM 负责对类进行初始化，主要对类变量进行初始化，Java 中为类变量进行初始值设定有两种方式：(1) 声明类变量时指定值；(2) 在静态代码块赋值。</p>
+<p><strong>初始化的步骤如下</strong>：</p>
+<ol>
+<li>假如这个类还没有被加载和连接，则程序先加载并连接该类</li>
+<li>假如该类的直接父类还没有被初始化，则先初始化其直接父类</li>
+<li>假如类中有初始化语句，则系统依次执行这些初始化语句</li>
+</ol>
+<p>类初始化其实是执行类构造器方法的过程，编译器会自动收集类中的类变量赋值操作和静态代码块的语句合并而成，并且 JVM 会保证子构造器方法执行前，父类构造器已经执行完毕。如果一个类中既没有类变量也没有静态代码块，那么编译器可以不为这个类生成构造器方法。</p>
+<p><strong>而初始化只有在对类的主动使用时才会触发，触发方式大概有以下几种</strong>：</p>
+<ul>
+<li>创建类的实例，也就是 new 的方式</li>
+<li>访问某个类或接口的静态变量，或者对该静态变量赋值</li>
+<li>调用类的静态方法反射（如 <code>Class.forName(&quot;com.Test&quot;)</code>）</li>
+<li>初始化某个类的子类，则其父类也会被初始化</li>
+<li>Java 虚拟机启动时被标明为启动类的类，直接使用 java.exe 命令来运行某个主类</li>
+</ul>
+<p><strong>不会触发类初始化的情况如下</strong>：</p>
+<ul>
+<li>通过子类引用父类的静态字段，只会触发父类的初始化，而子类不会初始化</li>
+<li>定义数组对象，不会触发该类的初始化</li>
+<li>常量在编译期间会存入调用类的常量池，但本质上并没有直接引用定义常量的类，所以也不会触发初始化</li>
+<li>通过类名获取 Class 对象（<code>Test.Class</code>），不会触发</li>
+<li>通过 <code>Class.forName()</code> 加载指定类时，如果指定参数 <code>initialize</code> 为 false ，不会触发类初 始化，因为该参数是告诉虚拟机是否要对类进行初始化</li>
+</ul>
+<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a><span id="jump">类加载器</span></h2><p>类加载经过 <strong>初始化</strong> 这一步后，就已经可以正常使用，这个过程走下来，其实在最初的 <strong>加载</strong> 这一步开发者可以控制外，其它都是由 JVM 自行完成。而控制加载过程，则需要使用到类加载器。</p>
+<p>我们先简单了解下 JVM 提供的三种类加载器，如下图所示：</p>
+<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/类加载器.jpg" width="400" height="300" align="center">
+
+<ul>
+<li><strong>启动类加载器(Bootstrap ClassLoader)</strong> ：负责加载 JAVA_HOME\lib 目录中的，或通过 -Xbootclasspath 参数指定路径中的，且被 虚拟机认可（按文件名识别，如 rt.jar）的类。</li>
+<li><strong>扩展类加载器(Extension ClassLoader)</strong> ：负责加载 JAVA_HOME\lib\ext 目录中的，或通过 java.ext.dirs 系统变量指定路径中的类库。</li>
+<li><strong>应用程序类加载器(Application ClassLoader）</strong>：负责加载用户路径（classpath）上的类库。</li>
+</ul>
+<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>在上面类加器图中我们可以看到，当一个类加载器收到类加载任务，会先交给其父类加载器去完成，因此最终加载任务都会传递到顶层的启动类加载器，只有当父类加载器无法完成加载任务时，才会尝试执行加载任务。这样子的好处是保证了使用不同的类加载器最终得到的都是同样一个 Object 对象。</p>
+<p>而类加载器存在以下机制：</p>
+<ul>
+<li><strong>全盘负责</strong>：当一个类加载器负责加载某个 Class 时，该 Class 所依赖的和引用的其他 Class 也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。</li>
+<li><strong>父类委托</strong>：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。</li>
+<li><strong>缓存机制</strong>：缓存机制将会保证所有加载过的 Class 都会被缓存，当程序中需要使用某个 Class 时，类加载器先从缓存区寻找该 Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成 Class 对象，存入缓存区。这就是为什么修改了 Class 后，必须重启 JVM，程序的修改才会生效。</li>
+</ul>
+<h3 id="自定义类加载器"><a href="#自定义类加载器" class="headerlink" title="自定义类加载器"></a>自定义类加载器</h3><p>当然，如果有需要，我们也可以自定义类加载器，只要 <strong>继承 ClassLoader 并重写其 loadClass() 方法</strong>，然后编写加载的具体逻辑代码即可。但这里有个要注意的点，如果直接重写 <strong>loadClass()</strong> 方法，有可能会破坏原本的双亲委派模型哦，具体如何避免该问题，就得查看浏览下 <strong>loadClass()</strong> 方法的源码了，在兴趣的伙伴们可以去看看哦。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇主要讲解 JVM 类加载机制，意在让读者明白 Java 文件编写后 JVM 是如何处理并正确使用，并理解类加载器的执行机制。当然本篇并不算全面细致的讲解，也有忽略的细节，如 <strong>连接-验证</strong> 步骤若是反复验证影响了加载效率该如何做，启动类加载器无法被 Java 程序直接引用等问题。</p>
+<p>但事无巨细，很多问题都是在某些情况下触发，都是要读者们在实际应用中去注意、发现并解决这些问题，久而久之，不仅问题解决了，还能更深入的理解其核心原理。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p>《<a href="https://book.douban.com/subject/6522893/" target="_blank" rel="noopener"><font color="blue">深入理解Java虚拟机</font></a>》第7章 / 周志明 / 机械工业出版社</p>
+</blockquote>
+]]></content>
+      <tags>
+        <tag>Java 虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>聊聊 HashMap</title>
     <url>/2020/07/19/%E8%81%8A%E8%81%8A-hashmap/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Map，Java 三大集合框架之一，JDK1.2 时便已存在，是一个 <code>Key-Value</code>键值对映射的接口，即一个 <code>Key</code>对应一个<code>Value</code>。在日常开发使用中，我们常见的 Map 实现类有：HashMap、Hashtable、TreeMap、LinkedHashMap 等，用以应对不同业务情况下的数据存储与使用。而本篇的主角是 HashMap，让我们来粗浅的聊聊它吧。（注意：本篇 HashMap 的源码和原理讲解全部基于 JDK1.7）</p>
@@ -91,186 +351,6 @@
       <tags>
         <tag>HashMap</tag>
         <tag>Java 数据结构</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>JVM-类加载机制</title>
-    <url>/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<p>在 <a href="https://yudi-corgi.github.io/2020/07/08/JVM-内存模型/"><font color="blue">JVM-内存模型</font></a> 篇已经详细讲解了 JVM 内存模型的结构，如果想先了解 JVM 的内存模型，可以戳一下链接先去看看哦。这一篇，我将着重描述 Java 类加载机制，在 JVM 中类的加载到底经历了哪些过程。</p>
-<h2 id="什么是类的加载"><a href="#什么是类的加载" class="headerlink" title="什么是类的加载"></a>什么是类的加载</h2><p>类的加载指的是将类的 <code>.class</code> 文件中的二进制数据读入到内存中，将其放在 JVM 运行时数据区的方法区内，然后在堆区创建一个<code>java.lang.Class</code>对象，用来封装类在方法区内的数据结构。类的加载的最终结果是位于堆区中的 Class 对象，Class 对象封装了类在方法区内的数据结构，并提供了访问方法区内的数据结构的接口。</p>
-<p>我们可以简单看张图理解下：</p>
-<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/jvm类加载.jpg" alt="JVM类加载" align="center">
-
-<p>从图片我们知道，类加载完毕后，类的数据全部都存放在 JVM 的方法区，堆区只是提供了一个入口去调用相应的对象数据，比如 <code>Class.newInstance()</code>，所以到这里，我们也能理解为什么 Java 对象都存放在堆区的原因。</p>
-<p>类加载器并不需要等到某个类被“首次主动使用”时再加载它，JVM 规范允许类加载器在预料某个类将要被使用时就预先加载它，如果在预先加载的过程中遇到了 <code>.class</code> 文件缺失或存在错误，类加载器必须在程序首次主动使用该类时才报告错误（LinkageError 错误），如果这个类一直没有被程序主动使用，那么类加载器就不会报告错误。（此段引用于 <a href="http://www.ityouknow.com/jvm/2017/08/19/class-loading-principle.html" target="_blank" rel="noopener">纯洁的微笑-Java 类加载机制</a>）</p>
-<h2 id="类的加载过程"><a href="#类的加载过程" class="headerlink" title="类的加载过程"></a>类的加载过程</h2><p>如下图所示，JVM 类加载主要经历五个部分：加载、连接、初始化、使用、卸载。接下来一一讲解每个部分都做了什么。</p>
-<p><img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.jpg" alt="类加载过程"></p>
-<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>加载是类加载过程的第一个阶段，主要是查找并加载类的二进制数据，而这一阶段也就会在堆区生成一个 <code>java.lang.Class</code> 对象，作为入口用于访问该对象在方法区里的数据结构。而且这一步也是可控的，我们可以使用默认的类加载器，也可以自定义类加载器对 Java 文件进行加载（关于 <a href="#jump">类加载器</a> 👈下面有做简单介绍）。</p>
-<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>连接细化分下来，其实有三步，分别为以下三个部分：</p>
-<h4 id="验证：确保被加载的类的正确性"><a href="#验证：确保被加载的类的正确性" class="headerlink" title="验证：确保被加载的类的正确性"></a>验证：确保被加载的类的正确性</h4><p>这是连接的第一步，判断当前 Class 文件的字节流信息是否符合当前 JVM 规范要求，大致会进行以下四个部分的验证：</p>
-<ul>
-<li>文件格式验证：验证字节流是否符合 Class 文件格式的规范</li>
-<li>元数据验证：对字节码描述的信息进行语义分析，以保证其描述的信息符合 Java 语言规范的要求</li>
-<li>字节码验证：通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的</li>
-<li>符号引用验证：确保”解析”动作能正确执行</li>
-</ul>
-<h4 id="准备：为类的静态变量分配内存，并将其初始化为默认值"><a href="#准备：为类的静态变量分配内存，并将其初始化为默认值" class="headerlink" title="准备：为类的静态变量分配内存，并将其初始化为默认值"></a>准备：为类的静态变量分配内存，并将其初始化为默认值</h4><p>这一步主要是在方法区中为类变量分配内存，并初始化类变量的值。</p>
-<p>比如声明如下，<code>value</code> 的值在准备阶段会被初始化为 0，而不是 80，即数据类型的默认初始值，实际值的初始化会在 <strong>初始化</strong> 阶段（下面会讲到）：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">80</span>;</span><br></pre></td></tr></table></figure>
-
-<p>但如果是下面的声明方式，则会直接赋值为 8080，在编译阶段会为 <code>value</code> 生成 ConstantValue 属性，并在准备阶段赋值为 8080：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> value = <span class="number">8080</span>;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="解析：把常量池内的符号引用转换为直接引用"><a href="#解析：把常量池内的符号引用转换为直接引用" class="headerlink" title="解析：把常量池内的符号引用转换为直接引用"></a>解析：把常量池内的符号引用转换为直接引用</h4><p>主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符七类符号引用，符号引用类型常见如下：</p>
-<ul>
-<li>CONSTANT_Class_info</li>
-<li>CONSTANT_Field_info</li>
-<li>CONSTANT_Method_info</li>
-</ul>
-<p><strong>符号引用</strong>：一组符号来描述目标，可以是任何字面量，它与虚拟机实现的布局无关，引用的目标并不一定要已经加载到内存中。各种虚拟机实现的内存布局可以各不相同，但是它们能接受的符号引用必须是一致的，因为符号引用的字面量形式明确定义在 Java 虚拟机规范的 Class 文件格式中。</p>
-<p><strong>直接引用</strong>：就是直接指向目标的指针、相对偏移量或一个间接定位到目标的句柄，当有了直接引用，就说明引用的目标在内存已经存在。</p>
-<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>为类的静态变量赋予正确的初始值，JVM 负责对类进行初始化，主要对类变量进行初始化，Java 中为类变量进行初始值设定有两种方式：(1) 声明类变量时指定值；(2) 在静态代码块赋值。</p>
-<p><strong>初始化的步骤如下</strong>：</p>
-<ol>
-<li>假如这个类还没有被加载和连接，则程序先加载并连接该类</li>
-<li>假如该类的直接父类还没有被初始化，则先初始化其直接父类</li>
-<li>假如类中有初始化语句，则系统依次执行这些初始化语句</li>
-</ol>
-<p>类初始化其实是执行类构造器方法的过程，编译器会自动收集类中的类变量赋值操作和静态代码块的语句合并而成，并且 JVM 会保证子构造器方法执行前，父类构造器已经执行完毕。如果一个类中既没有类变量也没有静态代码块，那么编译器可以不为这个类生成构造器方法。</p>
-<p><strong>而初始化只有在对类的主动使用时才会触发，触发方式大概有以下几种</strong>：</p>
-<ul>
-<li>创建类的实例，也就是 new 的方式</li>
-<li>访问某个类或接口的静态变量，或者对该静态变量赋值</li>
-<li>调用类的静态方法反射（如 <code>Class.forName(&quot;com.Test&quot;)</code>）</li>
-<li>初始化某个类的子类，则其父类也会被初始化</li>
-<li>Java 虚拟机启动时被标明为启动类的类，直接使用 java.exe 命令来运行某个主类</li>
-</ul>
-<p><strong>不会触发类初始化的情况如下</strong>：</p>
-<ul>
-<li>通过子类引用父类的静态字段，只会触发父类的初始化，而子类不会初始化</li>
-<li>定义数组对象，不会触发该类的初始化</li>
-<li>常量在编译期间会存入调用类的常量池，但本质上并没有直接引用定义常量的类，所以也不会触发初始化</li>
-<li>通过类名获取 Class 对象（<code>Test.Class</code>），不会触发</li>
-<li>通过 <code>Class.forName()</code> 加载指定类时，如果指定参数 <code>initialize</code> 为 false ，不会触发类初 始化，因为该参数是告诉虚拟机是否要对类进行初始化</li>
-</ul>
-<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a><span id="jump">类加载器</span></h2><p>类加载经过 <strong>初始化</strong> 这一步后，就已经可以正常使用，这个过程走下来，其实在最初的 <strong>加载</strong> 这一步开发者可以控制外，其它都是由 JVM 自行完成。而控制加载过程，则需要使用到类加载器。</p>
-<p>我们先简单了解下 JVM 提供的三种类加载器，如下图所示：</p>
-<img src="/2020/07/15/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/类加载器.jpg" width="400" height="300" align="center">
-
-<ul>
-<li><strong>启动类加载器(Bootstrap ClassLoader)</strong> ：负责加载 JAVA_HOME\lib 目录中的，或通过 -Xbootclasspath 参数指定路径中的，且被 虚拟机认可（按文件名识别，如 rt.jar）的类。</li>
-<li><strong>扩展类加载器(Extension ClassLoader)</strong> ：负责加载 JAVA_HOME\lib\ext 目录中的，或通过 java.ext.dirs 系统变量指定路径中的类库。</li>
-<li><strong>应用程序类加载器(Application ClassLoader）</strong>：负责加载用户路径（classpath）上的类库。</li>
-</ul>
-<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>在上面类加器图中我们可以看到，当一个类加载器收到类加载任务，会先交给其父类加载器去完成，因此最终加载任务都会传递到顶层的启动类加载器，只有当父类加载器无法完成加载任务时，才会尝试执行加载任务。这样子的好处是保证了使用不同的类加载器最终得到的都是同样一个 Object 对象。</p>
-<p>而类加载器存在以下机制：</p>
-<ul>
-<li><strong>全盘负责</strong>：当一个类加载器负责加载某个 Class 时，该 Class 所依赖的和引用的其他 Class 也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。</li>
-<li><strong>父类委托</strong>：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。</li>
-<li><strong>缓存机制</strong>：缓存机制将会保证所有加载过的 Class 都会被缓存，当程序中需要使用某个 Class 时，类加载器先从缓存区寻找该 Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成 Class 对象，存入缓存区。这就是为什么修改了 Class 后，必须重启 JVM，程序的修改才会生效。</li>
-</ul>
-<h3 id="自定义类加载器"><a href="#自定义类加载器" class="headerlink" title="自定义类加载器"></a>自定义类加载器</h3><p>当然，如果有需要，我们也可以自定义类加载器，只要 <strong>继承 ClassLoader 并重写其 loadClass() 方法</strong>，然后编写加载的具体逻辑代码即可。但这里有个要注意的点，如果直接重写 <strong>loadClass()</strong> 方法，有可能会破坏原本的双亲委派模型哦，具体如何避免该问题，就得查看浏览下 <strong>loadClass()</strong> 方法的源码了，在兴趣的伙伴们可以去看看哦。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇主要讲解 JVM 类加载机制，意在让读者明白 Java 文件编写后 JVM 是如何处理并正确使用，并理解类加载器的执行机制。当然本篇并不算全面细致的讲解，也有忽略的细节，如 <strong>连接-验证</strong> 步骤若是反复验证影响了加载效率该如何做，启动类加载器无法被 Java 程序直接引用等问题。</p>
-<p>但事无巨细，很多问题都是在某些情况下触发，都是要读者们在实际应用中去注意、发现并解决这些问题，久而久之，不仅问题解决了，还能更深入的理解其核心原理。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
-<p>《深入理解Java虚拟机》第7章 / 周志明 / 机械工业出版社</p>
-</blockquote>
-]]></content>
-      <tags>
-        <tag>Java 虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>JVM-内存模型</title>
-    <url>/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</url>
-    <content><![CDATA[<h2 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM"></a>什么是 JVM</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>JVM 是 Java Virtual Machine（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。</p>
-<p>引入 Java 虚拟机后，Java 语言开发的程序在不同平台上运行时不需要重新编译。JVM屏蔽了与具体操作系统平台相关的信息，使得 Java 程序只需生成在 Java 虚拟机上运行的字节码(.class)，就可以在多种平台上不加修改地运行。对于 JVM，除了 Oracle，也有其它的开源或闭源实现。（摘自<a href="[https://zh.wikipedia.org/wiki/Java%E8%99%9A%E6%8B%9F%E6%9C%BA](https://zh.wikipedia.org/wiki/Java虚拟机)">维基百科</a>）</p>
-<h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>Java 是一门可跨平台的语言，但其本身并不能跨平台，而是通过 JVM 来实现。是通过 JVM 将编译好的文件解释成平台系统（Mac、Linux、Windows 等）可执行的机器码，然后系统加以运行，实现<strong>“一次编译，到处运行”</strong>的效果。</p>
-<p>学习 JVM，可以围绕四个部分进行：</p>
-<ul>
-<li>类的加载机制</li>
-<li>内存模型</li>
-<li>GC 算法、垃圾回收</li>
-<li>GC 分析、命令调优</li>
-</ul>
-<p>本篇着重于 JVM 内存模型的讲解，作为 Java 开发人员，平常或多或少会有这样的疑问，堆内存空间应当设置多大？OOM（OutOfMemoryError）异常到底涉及了运行时数据内存哪块区域？JVM 内存调优从哪里入手？</p>
-<p>在理解了 JVM 内存模型后，我们就可以知道，平常编写的 Java 文件信息是如何被 JVM 管理、存放，Java 方法执行时生成的变量、返回结果等 JVM 又是如何操作，堆内存大小如何设置等等。</p>
-<h2 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h2><p>Java 程序的开发，并不需要像 C/C++ 开发一样时刻关注内存的释放，而是全权交由 JVM 去管理，JVM 内存模型主要是指运行时内存模型，分为 <strong>线程私有</strong> 和 <strong>线程共享</strong> 数据区两大类：</p>
-<ul>
-<li>线程私有：程序计数器、虚拟机栈、本地方法栈；</li>
-<li>线程共享：Java 堆（Heap）、方法区（包含运行时常量池）。</li>
-</ul>
-<p>线程私有数据区域生命周期与线程相同，依赖用户线程的启动（结束）而创建（销毁）；<br>线程共享数据区域则随虚拟机的启动（关闭）而创建（销毁）。</p>
-<p>JVM 内存模型结构图（<font color="green">绿色</font>共享，<font color="CC6600">橙色</font>私有）：</p>
-<img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/jvmMemoryModel.jpg" width="800" height="450" alt="JVM内存结构" align="true">
-
-<h3 id="程序计数器（私有）"><a href="#程序计数器（私有）" class="headerlink" title="程序计数器（私有）"></a>程序计数器（私有）</h3><p>程序计数器是一块较小的内存空间，是当前线程所执行的字节码的行号指示器，每个线程都有一个独立的计数器，互不影响。通过该计数器，JVM 解释器就知道下一步要执行的字节码指令位置，而分支、循环、跳转、异常处理、线程恢复等基础功能也都依赖于该计数器来实现。</p>
-<p>如果线程正在执行的是一个 Java 方法，则计数器记录的是正在执行的虚拟机字节码指令的地址，若为 Native 方法，则计数器的值为空（Undefined），并且该内存区域是唯一一个在虚拟机中没有规定任何 OOM 异常情况的区域。</p>
-<h3 id="虚拟机栈（私有）"><a href="#虚拟机栈（私有）" class="headerlink" title="虚拟机栈（私有）"></a>虚拟机栈（私有）</h3><p>是描述 Java 方法执行的内存模型，每个方法（不含 Native）在执行时都会创建一个栈帧，方法执行过程，就对应着虚拟机栈的入栈到出栈的过程。（现在明白平常用 IDE 调试时点击 Drop Frame 是回退到方法执行前的原因了吧 (●’◡’●)）</p>
-<h4 id="栈帧（Stack-Frame）结构"><a href="#栈帧（Stack-Frame）结构" class="headerlink" title="栈帧（Stack Frame）结构"></a>栈帧（Stack Frame）结构</h4><ul>
-<li>局部变量表</li>
-<li>操作栈</li>
-<li>动态链接</li>
-<li>方法返回地址</li>
-<li>额外附加信息</li>
-</ul>
-<p>栈帧是用来存储数据和部分过程结果的数据结构，同时也被用来处理动态链接、方法返回值和异常分派（Dispatch Exception）。栈帧随着方法调用而创建，随着方法结束而销毁——无论方法是正常完成还是异常完成（抛出了在方法内未被捕获的异常）都算作方法结束。 </p>
-<h4 id="异常（Exception）"><a href="#异常（Exception）" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域有两种异常：</p>
-<ul>
-<li><strong>StackOverFlowError</strong>：当线程请求栈深度超出虚拟机栈所允许的深度时抛出；</li>
-<li><strong>OutOfMemoryError</strong>：当 JVM 动态扩展到无法申请足够内存时抛出。</li>
-</ul>
-<h3 id="本地方法栈（私有）"><a href="#本地方法栈（私有）" class="headerlink" title="本地方法栈（私有）"></a>本地方法栈（私有）</h3><p>本地方法栈的作用其实与虚拟机栈类似，区别只在于 <strong>本地方法栈是为 Native 方法 服务</strong>，<strong>而虚拟机栈是为 Java 方法 服务</strong>。虚拟机规范中对本地方法栈中的方法使用的语言、方式与数据结构并没有强制规定，因此具体的虚拟机可以自由实现它。有的虚拟机实现也将本地方法栈和虚拟机栈合并，如 HotSpot 虚拟机。</p>
-<p>对于异常抛出规范，也与虚拟机栈相同，分别是 <strong>StackOverFlowError</strong> 和 <strong>OutOfMemoryError</strong>。</p>
-<h3 id="Java-堆（共享）"><a href="#Java-堆（共享）" class="headerlink" title="Java 堆（共享）"></a>Java 堆（共享）</h3><p>Java 堆（Heap）是 JVM 管理的最大的一块内存，也是 GC（Garbage Collection，垃圾收集）的重点照顾对象，存放的是几乎所有的对象实例和数组数据。（JIT 编译器有栈上分配、标量替换等优化技术的实现导致部分对象实例数据不存在 Java 堆，而是栈内存）</p>
-<p>由于主流 JVM 实现对于 GC 采用分代收集算法，因此从 GC 角度来看，Java 堆可分为：</p>
-<ul>
-<li>新生代（Eden 区、From Servivor 区、To Servivor 区）</li>
-<li>老年代</li>
-</ul>
-<p>可以简单的理解新生代主要是存放新创建的对象，而老年代则是存放生命周期或存活时间较长的对象。并且 JVM 在新生代的 Eden 区开辟了一小块内存区域，即 <strong>分配缓冲区（TLAB - Thread-local allocation buffer，线程私有）</strong>，因为 Java 程序中很多对象都是小对象且用过即丢，不存在线程共享和适合被快速 GC ，所以小对象通常会被 JVM 优先分配在 TLAB 上，好处是分配内存效率高。</p>
-<p>（<font color="red">PS：</font>这一部分细节涉及到 JVM GC 的知识内容，所以只是粗略介绍新生代和老年代，后续将会新开一篇专门讲解 GC 的文章，也算是挖个小坑，督促自己再接再厉 O(∩_∩)O 。）</p>
-<h4 id="异常（Exception）-1"><a href="#异常（Exception）-1" class="headerlink" title="异常（Exception）"></a>异常（Exception）</h4><p>JVM 规范规定该区域可抛出异常： <strong>OutOfMemoryError</strong>，如果在堆中没有内存完成实例分配，并且堆也无法再扩展时抛出。</p>
-<h3 id="方法区（共享）"><a href="#方法区（共享）" class="headerlink" title="方法区（共享）"></a>方法区（共享）</h3><p>方法区主要存放的是虚拟机加载的类信息、常量、静态变量、编译器编译后的代码等，而 GC 在此区域出现频率较低，主要针对的是常量池的回收和类型的卸载，GC 不会在主程序运行期对方法区进行清理，所以容易随着加载的 Class 增多导致类膨胀，从而引发 <strong>OutOfMemoryError</strong> 异常。</p>
-<p>方法区也常被称为<strong>“永久代（Permanent Generation）”</strong>，这是因为 <strong>HotSpot 虚拟机（Sun JDK 和 Open JDK 自带的虚拟机实现）</strong>的设计团队选择把 GC 分代收集扩展至方法区（也可以理解为是用永久代方法实现了方法区），从而在 GC 方面与 Java 堆保持一致。</p>
-<p>在 Java 8 后，永久代则被替换为<strong>“元空间（Metaspace）”</strong>，当然了，后者依然是基于 HotSpot 虚拟机，两者区别主要在于：<strong>元空间并不在虚拟机中，而是使用本地内存</strong>。因此元空间的大小仅受本地内存限制，基本不存在 OOM 异常问题。并且类的元数据放入本地内存，字符串池和静态变量等则放入到 Java 堆中。</p>
-<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>作为方法区的一部分，用于存放编译期生产的各种字面量和符号引用，运行时常量池除了编译期产生的 Class 文件的常量池，还可以在运行期间，将新的常量加入常量池，比如 String 类的 intern() 方法。该区域不会抛出 <strong>OutOfMemoryError</strong> 异常。</p>
-<ul>
-<li>字面量：与 Java 语言层面的常量概念相近，包含文本字符串、声明为 final 的常量值等；</li>
-<li>符号引用：编译语言层面的概念，包括以下三类：<ol>
-<li>类和接口的全限定名；</li>
-<li>字段的名称和描述符；</li>
-<li>方法的名称和描述符。</li>
-</ol>
-</li>
-</ul>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>关于堆、栈内存的大小设置，可以通过 IDE（IDEA、Eclipse）或 Web 容器（Tomcat ）等来配置，可通过下图来了解参数所控制的区域分别是什么。</p>
-<p><img src="/2020/07/08/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/Heap.png" alt="堆栈参数设置参照图"></p>
-<p>参数控制：</p>
-<ul>
-<li>-Xms：设置堆的最小空间大小；</li>
-<li>-Xmx：设置堆的最大空间大小；</li>
-<li>-XX:NewSize：设置新生代最小空间大小；</li>
-<li>-XX:MaxNewSize：设置新生代最大空间大小；</li>
-<li>-XX:PermSize：设置永久代最小空间大小；（JDK 8 后无效）</li>
-<li>-XX:MaxPermSize：设置永久代最大空间大小；（JDK 8 后无效）</li>
-<li>-XX:MetaspaceSize：设置元空间最小空间大小；（JDK 8 后有效）</li>
-<li>-XX:MaxMetaspaceSize：设置元空间最大空间大小；（JDK 8 后有效）</li>
-<li>-Xss：设置每个线程的堆栈大小。</li>
-</ul>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇主要讲解 JVM 内存结构及其概念，意在让大伙了解 JVM 结构是个什么样子，而了解 JVM 是如何管理内存、如何处理 Java 程序运行所产生的数据，可以启发我们在内存管理、性能分析和调优方面的思维，后续文章将会更深入于 JVM 的其它功能原理。</p>
-<p>作为 Java 开发者，想要强化个人的技术，扩展自己的思维，JVM 是一道必须攻破的关卡。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
-<p>《深入理解Java虚拟机》第2章 / 周志明 / 机械工业出版社<br>《Java虚拟机规范》/ Tim Lindholm Frank Yellin / 机械工业出版社<br>技术博客：<a href="https://www.fangzhipeng.com/javainterview/2019/04/09/jmm.html" target="_blank" rel="noopener">Java 虚拟机：JVM 内存模型</a>，作者：<a href="https://www.fangzhipeng.com/" target="_blank" rel="noopener">方志朋</a></p>
-</blockquote>
-<h2 id="花絮"><a href="#花絮" class="headerlink" title="花絮"></a>花絮</h2><p>本篇是 JVM 系列文章的第一篇，也是我第一次编写的技术博客，之所以以 JVM 知识为开头，也是因为对于 JVM 的内容一直都是仅凭记忆，就导致容易遗忘，而且很多知识点都是零零散散，没有连结成知识网，也没有做一些知识记录（好像暴露了我懒(ˉ▽￣～) ），加上本人也想通过搭建一个博客网站，来总结自己一路学习的技术和知识，并分享给别人，因此便有了这个开头。</p>
-<p>博客的编写，尤其是技术类，要考虑的细节还是挺多，如技术原理、常用实现方式、个人实际使用经验、流行程度、更新迭代等。总的来说，这对于我个人的知识总结能力也大有脾益，对一门新技术，我崇尚的是从不会、到了解掌握、再到能讲解给别人听让别人理解。</p>
-<p>路漫漫其修远兮，吾将上下而求索。万事不急，坐下喝杯 Java，咱慢慢学。♪(^∇^*)</p>
-]]></content>
-      <tags>
-        <tag>Java 虚拟机</tag>
       </tags>
   </entry>
 </search>
