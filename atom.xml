@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-06-04T08:32:20.448Z</updated>
+  <updated>2025-06-11T05:55:12.907Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -22,7 +22,7 @@
     <title type="text">TCP 杂谈</title>
     <id>https://blog.yudi-corgi.site/posts/distribute/tcp.html</id>
     <link href="https://blog.yudi-corgi.site/posts/distribute/tcp.html"/>
-    <updated>2025-05-26T16:18:40.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<blockquote>
 <p>note：本篇是关于 TCP 的知识点记录，会比较琐碎。</p>
 </blockquote>
@@ -138,7 +138,7 @@
     <title type="text">Jenkins 流水线快速理解</title>
     <id>https://blog.yudi-corgi.site/posts/distribute/jenkins_pipeline.html</id>
     <link href="https://blog.yudi-corgi.site/posts/distribute/jenkins_pipeline.html"/>
-    <updated>2025-05-24T17:11:09.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<h2>流水线 Pipeline</h2>
 <h3>概念</h3>
 <p><strong><a href="https://www.jenkins.io/doc/book/pipeline/" target="_blank" rel="noopener noreferrer">Jenkins Pipeline</a></strong>（简称 Pipeline/流水线）是一套插件，支持实现<em>持续交付管道</em>（CDP，continuous delivery pipelines）并将其集成到 Jenkins 中。</p>
@@ -931,7 +931,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">深入浅出 String 字符串</title>
     <id>https://blog.yudi-corgi.site/posts/java/java-string.html</id>
     <link href="https://blog.yudi-corgi.site/posts/java/java-string.html"/>
-    <updated>2024-10-25T15:46:56.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<h2>引子</h2>
 <p>相信每个 Javaer 都遇到过这个问题：<code>String abc = new String("123");</code> 创建了几个对象？其作为八股文已是老生常谈，考究的是大伙对对象创建以及字符串在 JVM 中的存储理解。本篇文章就来深入探讨下 String 方方面面的问题。</p>
 <h2>String 内部结构</h2>
@@ -1272,7 +1272,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">Spring Cloud Stream 系列（三）</title>
     <id>https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html"/>
-    <updated>2024-06-07T15:35:25.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<h2>分区</h2>
 <p>Spring Cloud Stream 提供对给定应用程序的多个实例之间的数据分区的支持。在分区场景中，物理通信介质（例如 Broker 的 Topic）被视为由多个分区组成。一个或多个生产者应用程序实例将数据发送到多个消费者应用程序实例，并确保以共同特征标识的数据由同一消费者实例处理。</p>
 <p>Spring Cloud Stream 提供了一个通用抽象，用于以统一的方式实现分区处理用例。因此，无论 MQ 本身是否自然分区（如 Kafka）或不自然分区（如 RabbitMQ），都可以使用分区。</p>
@@ -1535,7 +1535,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">Spring Cloud Stream 系列（二）</title>
     <id>https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_two.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_two.html"/>
-    <updated>2024-06-07T15:35:25.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<p><a href="/posts/framework/spring/spring_cloud_stream_one.html" target="_blank">上篇</a>主要讲了 Spring Cloud Stream 的基础用法以及对 RabbitMQ 的配置使用，但若只看这点，那么跟 Spring Boot 集成 MQ 的方式比起来并没有什么突出的地方。Spring Cloud Stream 强大之处是在于隐藏了各类 MQ 不同且（可能）繁琐的配置和代码操作，提供了统一的概念（Binder、Binding、Message）、配置（输入/输出绑定、生产/消费）、消息收发 API 以及函数定义，用一套做法就完成对不同 MQ 系统的使用。这听起来是不是很熟悉~~~？其实这就是门面（或外观）模式的体现，类似 SLF4J 日志、Spring 的 ApplicationContext 等，隐藏了背后依赖库、框架或其它对象的复杂实现，提供一个简单的门面接口来使用。</p>]]></summary>
     <content type="html"><![CDATA[<p><a href="/posts/framework/spring/spring_cloud_stream_one.html" target="_blank">上篇</a>主要讲了 Spring Cloud Stream 的基础用法以及对 RabbitMQ 的配置使用，但若只看这点，那么跟 Spring Boot 集成 MQ 的方式比起来并没有什么突出的地方。Spring Cloud Stream 强大之处是在于隐藏了各类 MQ 不同且（可能）繁琐的配置和代码操作，提供了统一的概念（Binder、Binding、Message）、配置（输入/输出绑定、生产/消费）、消息收发 API 以及函数定义，用一套做法就完成对不同 MQ 系统的使用。这听起来是不是很熟悉~~~？其实这就是门面（或外观）模式的体现，类似 SLF4J 日志、Spring 的 ApplicationContext 等，隐藏了背后依赖库、框架或其它对象的复杂实现，提供一个简单的门面接口来使用。</p>
 <h2>Binder</h2>
@@ -1904,7 +1904,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">Spring Cloud Stream 系列（一）</title>
     <id>https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_one.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_one.html"/>
-    <updated>2024-06-07T15:11:42.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<blockquote>
 <p><strong><a href="https://spring.io/projects/spring-cloud-stream#learn" target="_blank" rel="noopener noreferrer">Spring Cloud Stream</a></strong>：是用于构建与共享消息传递系统连接的高度可扩展的事件驱动微服务，其提供一个灵活的编程模型，基于 Spring 习语来实现对各类常见的 MQ 系统的支持，如官方自己提供的 RabbitMQ Binder、Kafka Binder，还有其它 MQ 厂商自己提供的适配。其内部使用 Spring Integration 提供与 broker 的连接，并能够在同样的配置、代码下实现不同 MQ 产品的消息发布订阅、消费者组、持久化、分区等特性。</p>
 </blockquote>]]></summary>
@@ -2254,7 +2254,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">分布式事务</title>
     <id>https://blog.yudi-corgi.site/posts/distribute/distributed_transaction.html</id>
     <link href="https://blog.yudi-corgi.site/posts/distribute/distributed_transaction.html"/>
-    <updated>2025-05-24T16:27:21.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<p>分布式事务是在分布式系统下绕不开的一个话题，它的概念是指：<strong>在分布式系统下，一个业务跨多个服务或数据源，每个服务都是一个分支事务，要保证多个分支事务最终一致性，即为分布式事务</strong>。本篇便是来介绍常见的几种分布式事务实现方案。</p>
 <h2>理论规范</h2>
 <p>先来了解下分布式领域的一些定理。</p>
@@ -3772,7 +3772,7 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
     <title type="text">J2Cache 缓存框架：快速上手指南</title>
     <id>https://blog.yudi-corgi.site/posts/framework/cache/J2Cache.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/cache/J2Cache.html"/>
-    <updated>2024-01-13T09:34:59.000Z</updated>
+    <updated>2025-06-11T03:35:55.000Z</updated>
     <summary type="html"><![CDATA[<h2>介绍</h2>
 <p><strong>J2Cache</strong> 是 OSChina 研发的两级缓存框架。第一级缓存 L1 使用内存（同时支持 Ehcache 2.x、Ehcache 3.x 和 Caffeine），第二级缓存 L2 使用 Redis（推荐）/Memcached。我们知道像 Redis 此类远端缓存的性能瓶颈主要在于网络，因此 L1 的加入目标是降低对 L2 的读取次数。该缓存框架主要用于集群环境中，单机也可以使用，用于避免应用重启导致的缓存冷启动后对后端业务的冲击。</p>
 <blockquote>
