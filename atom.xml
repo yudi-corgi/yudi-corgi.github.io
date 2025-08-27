@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-26T08:29:40.276Z</updated>
+  <updated>2025-08-27T09:26:55.864Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -1632,7 +1632,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">Spring Cloud Stream 系列（三）</title>
     <id>https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html"/>
-    <updated>2025-06-11T03:35:55.000Z</updated>
+    <updated>2025-08-27T09:25:29.000Z</updated>
     <summary type="html"><![CDATA[<h2>分区</h2>
 <p>Spring Cloud Stream 提供对给定应用程序的多个实例之间的数据分区的支持。在分区场景中，物理通信介质（例如 Broker 的 Topic）被视为由多个分区组成。一个或多个生产者应用程序实例将数据发送到多个消费者应用程序实例，并确保以共同特征标识的数据由同一消费者实例处理。</p>
 <p>Spring Cloud Stream 提供了一个通用抽象，用于以统一的方式实现分区处理用例。因此，无论 MQ 本身是否自然分区（如 Kafka）或不自然分区（如 RabbitMQ），都可以使用分区。</p>
@@ -1825,7 +1825,8 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
 <span class="line"><span style="--shiki-light:#383A42;--shiki-dark:#E06C75">    </span></span>
 <span class="line"><span style="--shiki-light:#383A42;--shiki-dark:#ABB2BF">}</span></span></code></pre>
 <div class="line-numbers" aria-hidden="true" style="counter-reset:line-number 0"><div class="line-number"></div></div></div><blockquote>
-<p><strong>NOTE</strong>：multipleInput 函数在服务启动时便会执行一次，是因为 Bean 注册之后会调用一遍将 Function 结果转为 Flux 对象，后续就不会再走这个函数，而是通过 Flux 对象进行数据处理了，想理解原理还是要优先了解 Project Reactor 中 Flux 的使用。</p>
+<p>![NOTE]<br>
+multipleInput 函数在服务启动时便会执行一次，是因为 Bean 注册之后会调用一遍将 Function 结果转为 Flux 对象，后续就不会再走这个函数，而是通过 Flux 对象进行数据处理了，想理解原理还是要优先了解 Project Reactor 中 Flux 的使用。</p>
 </blockquote>
 <p>可以看到上面函数定义的输入输出是 <code>Tuple2&lt;Flux&lt;String&gt;, Flux&lt;Integer&gt;&gt;, Flux&lt;String&gt;&gt;</code>，这样会直接取到消息的内容，如果有需要拿到消息头，可以定义成 <code>Tuple2&lt;Flux&lt;Message&lt;String&gt;&gt;, Flux&lt;Message&lt;Integer&gt;&gt;&gt;, Flux&lt;String&gt;&gt;</code>。</p>
 <p>在第一篇中介绍<a href="/posts/framework/spring/spring_cloud_stream_one.html#BindingName" target="_blank">绑定名称的规则</a>时，就有提到 <code>index</code> 是绑定的索引，只用于多输入/输出参数的函数，它从 0 开始，有多少个输入/输出参数，就配置多少个绑定，上面函数只定义了两个输入参数和一个输出参数，因此配置应当如下：</p>
@@ -4448,7 +4449,7 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
     <title type="text">JVM 内存模型</title>
     <id>https://blog.yudi-corgi.site/posts/java/jvm-memory-model.html</id>
     <link href="https://blog.yudi-corgi.site/posts/java/jvm-memory-model.html"/>
-    <updated>2024-01-13T09:34:59.000Z</updated>
+    <updated>2025-08-27T09:25:29.000Z</updated>
     <summary type="html"><![CDATA[<h2>什么是 JVM</h2>
 <h3>概念</h3>
 <p>JVM 是 <strong>Java Virtual Machine</strong>（Java 虚拟机）的缩写，是一种用于计算设备的规范、能够运行 Java 字节码的虚拟机，拥有自己完善的硬体架构，如处理器、堆栈、寄存器等，还具有相应的指令系统。</p>
@@ -4547,11 +4548,11 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
 <ul>
 <li>《<a href="https://book.douban.com/subject/6522893/" target="_blank" rel="noopener noreferrer">深入理解Java虚拟机</a>》第2章 / 周志明 / 机械工业出版社</li>
 <li>《<a href="https://book.douban.com/subject/26418340/" target="_blank" rel="noopener noreferrer">Java虚拟机规范</a>》/ 作者:Tim Lindholm、Frank Yellin 等 / 译者:爱飞翔、周志明等 / 机械工业出版社</li>
-<li>技术博客：<a href="https://www.fangzhipeng.com/javainterview/2019/04/09/jmm.html" target="_blank" rel="noopener noreferrer">Java 虚拟机：JVM 内存模型</a>，作者：<a href="https://www.fangzhipeng.com/" target="_blank" rel="noopener noreferrer">方志朋</a></li>
+<li><a href="https://springdoc.cn/jvm-advanced-options/" target="_blank" rel="noopener noreferrer">JVM 中的高级选项</a> - Spring 中文网</li>
 </ul>
 <h2>花絮</h2>
-<p>本篇是我第一次编写的博客文章，之所以以 JVM 知识为开头，也是因为对于 JVM 的内容一直都是仅凭记忆，就导致容易遗忘，而且很多知识点都是零零散散，没有连结成知识网，也没有做一些知识记录，加上本人也想通过搭建一个博客网站，来总结自己一路学习的技术和知识，并分享给别人，因此便有了这个开头。</p>
-<p>博客的编写，尤其是技术类，要考虑的细节还是挺多，如技术原理、常用实现方式、个人实际使用经验、流行程度、更新迭代等。总的来说，这对于我个人的知识总结能力也大有脾益，对一门新技术，我崇尚的是从不会、到了解掌握、再到能讲解给别人听让别人理解。</p>
+<p>本篇是笔者第一次编写的博客文章，之所以以 JVM 知识为开头，也是因为对于 JVM 的内容一直都是仅凭记忆，就导致容易遗忘，而且很多知识点都是零零散散，没有连结成知识网，也没有做一些知识记录，加上本人也想通过搭建一个博客网站，来总结自己一路学习的技术和知识，并分享给别人，因此便有了这个开头。</p>
+<p>博客的编写，尤其是技术类，要考虑的细节还是挺多，如技术原理、常用实现方式、个人实际使用经验、流行程度、更新迭代等。总的来说，这对于笔者的知识总结能力也大有脾益，对一门新技术，个人崇尚的是从不会、到了解掌握、再到能讲解给别人听让别人理解。</p>
 <p>路漫漫其修远兮，吾将上下而求索。</p>
 ]]></content>
     <category term="Java"/>
