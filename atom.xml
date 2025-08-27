@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-27T09:26:55.864Z</updated>
+  <updated>2025-08-27T10:25:00.752Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -4133,7 +4133,7 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
     <title type="text">J2Cache 缓存框架：快速上手指南</title>
     <id>https://blog.yudi-corgi.site/posts/framework/cache/J2Cache.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/cache/J2Cache.html"/>
-    <updated>2025-08-26T08:27:07.000Z</updated>
+    <updated>2025-08-27T10:23:36.000Z</updated>
     <summary type="html"><![CDATA[<h2>介绍</h2>
 <p><strong>J2Cache</strong> 是 OSChina 研发的两级缓存框架。第一级缓存 L1 使用内存（同时支持 Ehcache 2.x、Ehcache 3.x 和 Caffeine），第二级缓存 L2 使用 Redis（推荐）/Memcached。我们知道像 Redis 此类远端缓存的性能瓶颈主要在于网络，因此 L1 的加入目标是降低对 L2 的读取次数。该缓存框架主要用于集群环境中，单机也可以使用，用于避免应用重启导致的缓存冷启动后对后端业务的冲击。</p>
 <blockquote>
