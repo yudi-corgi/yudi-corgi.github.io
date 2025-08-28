@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-27T10:25:00.752Z</updated>
+  <updated>2025-08-28T03:11:15.556Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -5047,7 +5047,7 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
     <title type="text">关于作者</title>
     <id>https://blog.yudi-corgi.site/intro.html</id>
     <link href="https://blog.yudi-corgi.site/intro.html"/>
-    <updated>2025-05-25T16:48:30.000Z</updated>
+    <updated>2025-08-28T03:09:15.000Z</updated>
     <summary type="html"><![CDATA[
 <p>Java &amp; Kotlin 开发一枚 (●ˇ∀ˇ●) ~。</p>
 <h1>博客历史</h1>
@@ -5055,9 +5055,9 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
 <li>2020.07.08，使用 Hexo 首次建立个人博客，也在同一天发布了第一篇文章</li>
 <li>2020.08.09，因工作琐事，加上深感自己对技术的理解还不够深入，经验也不够充足，所以停更，更专注地学习各项技术、积累经验</li>
 <li>2023.09.21，时隔三年，重拾博客，从 Hexo 转向 VuePress</li>
+<li>2025.08.27，使用 <a href="https://docs.astro.build/en/getting-started/" target="_blank" rel="noopener noreferrer">Astro</a> <a href="https://github.com/radishzzz/astro-theme-retypeset" target="_blank" rel="noopener noreferrer">Retypeset</a> 主题重新构建了博客，如果你更想专注于内容、喜欢简洁优雅的阅读模式，可以戳此跳转：<a href="https://yudi-corgi.site" target="_blank" rel="noopener noreferrer">CorgiBlog</a></li>
 <li>Continue...</li>
-</ul>
-]]></summary>
+</ul>]]></summary>
     <content type="html"><![CDATA[
 <p>Java &amp; Kotlin 开发一枚 (●ˇ∀ˇ●) ~。</p>
 <h1>博客历史</h1>
@@ -5065,6 +5065,7 @@ Xero 是货币化 API 的一个特别激烈的例子：如果您想超过 25 个
 <li>2020.07.08，使用 Hexo 首次建立个人博客，也在同一天发布了第一篇文章</li>
 <li>2020.08.09，因工作琐事，加上深感自己对技术的理解还不够深入，经验也不够充足，所以停更，更专注地学习各项技术、积累经验</li>
 <li>2023.09.21，时隔三年，重拾博客，从 Hexo 转向 VuePress</li>
+<li>2025.08.27，使用 <a href="https://docs.astro.build/en/getting-started/" target="_blank" rel="noopener noreferrer">Astro</a> <a href="https://github.com/radishzzz/astro-theme-retypeset" target="_blank" rel="noopener noreferrer">Retypeset</a> 主题重新构建了博客，如果你更想专注于内容、喜欢简洁优雅的阅读模式，可以戳此跳转：<a href="https://yudi-corgi.site" target="_blank" rel="noopener noreferrer">CorgiBlog</a></li>
 <li>Continue...</li>
 </ul>
 ]]></content>
