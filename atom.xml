@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-28T06:12:29.579Z</updated>
+  <updated>2025-08-28T06:44:05.774Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -254,7 +254,7 @@
     <title type="text">Java 可插拔注解处理器</title>
     <id>https://blog.yudi-corgi.site/posts/java/annotation_processing.html</id>
     <link href="https://blog.yudi-corgi.site/posts/java/annotation_processing.html"/>
-    <updated>2025-08-25T06:24:44.000Z</updated>
+    <updated>2025-08-28T06:42:37.000Z</updated>
     <summary type="html"><![CDATA[<h2>介绍</h2>
 <p>Java 1.5 新增了一种 Java 语言机制「<strong>注解</strong>」，允许使用注解类型来注解类、字段和方法。这些注解通常由构建时工具或运行时库处理，以实现新的语义效果。为了支持<strong>构建时自定义注解处理</strong>，<a href="https://jcp.org/en/jsr/detail?id=269" target="_blank" rel="noopener noreferrer">JSR-269</a> 定义了 API，允许使用标准的可插拔 API（Pluggable Annotations Processing API）创建注解处理器，允许在编译阶段自定义对指定注解的处理。该 API 简化了注解处理器的创建，并允许自动发现给定源文件对应的注解处理器。</p>]]></summary>
     <content type="html"><![CDATA[<h2>介绍</h2>
