@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-28T03:11:15.556Z</updated>
+  <updated>2025-08-28T06:12:29.579Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -24,7 +24,7 @@
     <title type="text">DDD 学习笔记：从思想到术语</title>
     <id>https://blog.yudi-corgi.site/posts/distribute/ddd.html</id>
     <link href="https://blog.yudi-corgi.site/posts/distribute/ddd.html"/>
-    <updated>2025-08-26T08:27:07.000Z</updated>
+    <updated>2025-08-28T06:10:34.000Z</updated>
     <summary type="html"><![CDATA[<h2>前言</h2>
 <p>在学习了 DDD（领域驱动设计，Domain Driven Design）后，对 DDD 这一领域建模方法论有了更深的理解。不过与其说是方法论，笔者更认为是一种系统设计方面的指导思想，其价值在于，即便不进行全面的 DDD 重构，依然能借鉴其核心原则，对现有系统进行精准而有效的优化。</p>
 <p>在经历了单体应用、微服务/分布式系统的研发后，笔者见到很多业务系统在需求的快速迭代下，最终都陷入了代码野蛮生长、模块边界模糊、微服务名存实亡的困境。倘若从项目伊始，便能遵循一种统一的设计哲学去建模与实现，构建一个灵活且可持续演进的架构，那么在应对层出不穷的需求变更时，无疑会更加从容和优雅。</p>]]></summary>
@@ -61,6 +61,15 @@
 <li>《<a href="https://www.bilibili.com/video/BV1xV4y1H7Zq/?spm_id_from=333.1387.search.video_card.click" target="_blank" rel="noopener noreferrer">4-何正- DDD 在美团B端营销系统的实践</a>》</li>
 </ul>
 <p>以上四个视频都由美团技术团队发布，侧重于 DDD 的实践，可以在理解了 DDD 的核心知识后观看。</p>
+<h3>开源框架</h3>
+<ul>
+<li><a href="https://github.com/AxonFramework/AxonFramework" target="_blank" rel="noopener noreferrer">Axon</a>：Axon Framework 是一个基于领域驱动设计（DDD）、命令查询职责分离（CQRS）和事件源原则构建进化、事件驱动的微服务系统的框架
+<ul>
+<li><a href="https://github.com/AxonFramework/AxonBank" target="_blank" rel="noopener noreferrer">AxonBank</a>：基于银行业务的 Axon 框架应用示例</li>
+</ul>
+</li>
+<li><a href="https://github.com/alibaba/COLA" target="_blank" rel="noopener noreferrer">COLA</a>：COLA 是阿里开源的「整洁面向对象分层架构」，其按照 DDD 思想设计模块，专注于以业务为核心，解耦外部依赖，分离业务复杂度和技术复杂度等，同时还提供了可落地的工具和实践指导</li>
+</ul>
 <h2>笔记</h2>
 <h3>基础概念</h3>
 <p><strong>领域</strong>（Domain）：即特定的范围或区域。DDD 中会对业务进行领域（范围）划分，然后将问题限定在特定的边界内，在该边界内建立领域模型，从而解决相应业务问题。简言之，DDD 领域即边界内要解决的业务问题域。</p>
