@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-08-28T06:44:05.774Z</updated>
+  <updated>2025-08-29T03:43:23.842Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -1641,7 +1641,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">Spring Cloud Stream 系列（三）</title>
     <id>https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html</id>
     <link href="https://blog.yudi-corgi.site/posts/framework/spring/spring_cloud_stream_three.html"/>
-    <updated>2025-08-27T09:25:29.000Z</updated>
+    <updated>2025-08-29T03:41:59.000Z</updated>
     <summary type="html"><![CDATA[<h2>分区</h2>
 <p>Spring Cloud Stream 提供对给定应用程序的多个实例之间的数据分区的支持。在分区场景中，物理通信介质（例如 Broker 的 Topic）被视为由多个分区组成。一个或多个生产者应用程序实例将数据发送到多个消费者应用程序实例，并确保以共同特征标识的数据由同一消费者实例处理。</p>
 <p>Spring Cloud Stream 提供了一个通用抽象，用于以统一的方式实现分区处理用例。因此，无论 MQ 本身是否自然分区（如 Kafka）或不自然分区（如 RabbitMQ），都可以使用分区。</p>
@@ -1834,8 +1834,7 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
 <span class="line"><span style="--shiki-light:#383A42;--shiki-dark:#E06C75">    </span></span>
 <span class="line"><span style="--shiki-light:#383A42;--shiki-dark:#ABB2BF">}</span></span></code></pre>
 <div class="line-numbers" aria-hidden="true" style="counter-reset:line-number 0"><div class="line-number"></div></div></div><blockquote>
-<p>![NOTE]<br>
-multipleInput 函数在服务启动时便会执行一次，是因为 Bean 注册之后会调用一遍将 Function 结果转为 Flux 对象，后续就不会再走这个函数，而是通过 Flux 对象进行数据处理了，想理解原理还是要优先了解 Project Reactor 中 Flux 的使用。</p>
+<p><strong>NOTE</strong>：multipleInput 函数在服务启动时便会执行一次，是因为 Bean 注册之后会调用一遍将 Function 结果转为 Flux 对象，后续就不会再走这个函数，而是通过 Flux 对象进行数据处理了，想理解原理还是要优先了解 Project Reactor 中 Flux 的使用。</p>
 </blockquote>
 <p>可以看到上面函数定义的输入输出是 <code>Tuple2&lt;Flux&lt;String&gt;, Flux&lt;Integer&gt;&gt;, Flux&lt;String&gt;&gt;</code>，这样会直接取到消息的内容，如果有需要拿到消息头，可以定义成 <code>Tuple2&lt;Flux&lt;Message&lt;String&gt;&gt;, Flux&lt;Message&lt;Integer&gt;&gt;&gt;, Flux&lt;String&gt;&gt;</code>。</p>
 <p>在第一篇中介绍<a href="/posts/framework/spring/spring_cloud_stream_one.html#BindingName" target="_blank">绑定名称的规则</a>时，就有提到 <code>index</code> 是绑定的索引，只用于多输入/输出参数的函数，它从 0 开始，有多少个输入/输出参数，就配置多少个绑定，上面函数只定义了两个输入参数和一个输出参数，因此配置应当如下：</p>
