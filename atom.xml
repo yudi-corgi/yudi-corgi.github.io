@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-11-18T05:56:08.332Z</updated>
+  <updated>2025-11-18T06:05:32.948Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -24,7 +24,7 @@
     <title type="text">数据模型即命运</title>
     <id>https://blog.yudi-corgi.site/posts/reprint/your_data_model_is_your_destiny.html</id>
     <link href="https://blog.yudi-corgi.site/posts/reprint/your_data_model_is_your_destiny.html"/>
-    <updated>2025-11-18T05:53:18.000Z</updated>
+    <updated>2025-11-18T06:04:00.000Z</updated>
     <summary type="html"><![CDATA[<h2>写在前头</h2>
 <p>本篇是 <a href="https://notes.mtb.xyz/p/your-data-model-is-your-destiny" target="_blank" rel="noopener noreferrer">Your data model is your destiny</a> 一文的中文翻译。在 AI 拉平代码门槛的今天，产品的“护城河”是什么？文章通过案例雄辩地证明：真正的护城河并非“创意”，而是那个在早期就已定型、并决定后续复利优势的<strong>数据模型</strong>。</p>
 <p><strong>以下是太长不看版（由 AI 整理）</strong>：</p>]]></summary>
@@ -68,7 +68,7 @@ PMF (产品市场契合度) 是初创公司的圣杯。产品和市场固然至�
 过去十年中，那些“一鸣惊人”的公司，其成功往往可以追溯到一个“早期”的、“不易察觉”的数据模型选择，这个选择在当时看来微不足道，但最终被证明是“决定性”的。例如：</p>
 <ul>
 <li><strong>Slack’s persistent channels vs 1:1/group messages:</strong> While Yammer and HipChat replicated email’s ephemeral group messages, Slack made persistent, searchable channels the atomic unit. This created organizational memory—every decision, discussion, and document lives forever in context. Incumbents couldn’t match this without rebuilding from scratch.<br>
-<strong>Slack 的“持久化频道” vs “1:1/群组消息”：</strong> 当 Yammer 和 HipChat 还在复制 Email 那种“阅后即焚”的群聊时，Slack 让“持久化、可搜索的频道”成为了“原子单元”。这创造了“组织记忆”——每一个决策、讨论和文档都“永远”活在上下文中。现有的巨头们不从头重构就无法与此匹敌。</li>
+<strong>Slack 的“持久化频道” vs “1:1/群组消息”：</strong> 当 Yammer 和 HipChat 还在复制 Email 那种阅后即焚的群聊时，Slack 让持久化、可搜索的频道成为了“原子单元”。这创造了组织记忆——每一个决策、讨论和文档都永远活在上下文中。现有的巨头们不从头重构就无法与此匹敌。</li>
 </ul>
 <figure><figcaption></figcaption></figure>
 <ul>
