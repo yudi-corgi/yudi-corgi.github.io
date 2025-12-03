@@ -3,7 +3,7 @@
   <id>https://blog.yudi-corgi.site/</id>
   <title>Black Hole</title>
   <subtitle>个人博客</subtitle>
-  <updated>2025-11-18T06:05:32.948Z</updated>
+  <updated>2025-12-03T03:23:35.020Z</updated>
   <generator>@vuepress/plugin-feed</generator>
   <link rel="self" href="https://blog.yudi-corgi.site/atom.xml"/>
   <link rel="alternate" href="https://blog.yudi-corgi.site/"/>
@@ -1519,17 +1519,17 @@ WebTransport：设计为高度可扩展，受益于 HTTP/3 在处理连接和流
     <title type="text">深入浅出 String 字符串</title>
     <id>https://blog.yudi-corgi.site/posts/java/java-string.html</id>
     <link href="https://blog.yudi-corgi.site/posts/java/java-string.html"/>
-    <updated>2025-06-11T03:35:55.000Z</updated>
+    <updated>2025-11-20T06:41:59.000Z</updated>
     <summary type="html"><![CDATA[<h2>引子</h2>
 <p>相信每个 Javaer 都遇到过这个问题：<code>String abc = new String("123");</code> 创建了几个对象？其作为八股文已是老生常谈，考究的是大伙对对象创建以及字符串在 JVM 中的存储理解。本篇文章就来深入探讨下 String 方方面面的问题。</p>
 <h2>String 内部结构</h2>
 <h3>char[] -&gt; byte[]</h3>
-<p>String 内部原本使用一个 <code>char[] value</code> 存储字符，若不是”版本任你更，我用 Java 8“ 的钉子户，应该能发现从 JDK 9 开始，它就变成了 <code>byte[] value</code>。这么做的目的主要是为了<strong>减少字符串占用的内存，减少 GC 次数</strong>。（详见参考资料<a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">JEP 254</a>）</p>]]></summary>
+<p>String 内部原本使用一个 <code>char[] value</code> 存储字符，若不是“版本任你更，我用 Java 8”的钉子户，应该能发现从 JDK 9 开始，它就变成了 <code>byte[] value</code>。这么做的目的主要是为了<strong>减少字符串占用的内存，减少 GC 次数</strong>。（详见参考资料<a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">JEP 254</a>）</p>]]></summary>
     <content type="html"><![CDATA[<h2>引子</h2>
 <p>相信每个 Javaer 都遇到过这个问题：<code>String abc = new String("123");</code> 创建了几个对象？其作为八股文已是老生常谈，考究的是大伙对对象创建以及字符串在 JVM 中的存储理解。本篇文章就来深入探讨下 String 方方面面的问题。</p>
 <h2>String 内部结构</h2>
 <h3>char[] -&gt; byte[]</h3>
-<p>String 内部原本使用一个 <code>char[] value</code> 存储字符，若不是”版本任你更，我用 Java 8“ 的钉子户，应该能发现从 JDK 9 开始，它就变成了 <code>byte[] value</code>。这么做的目的主要是为了<strong>减少字符串占用的内存，减少 GC 次数</strong>。（详见参考资料<a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">JEP 254</a>）</p>
+<p>String 内部原本使用一个 <code>char[] value</code> 存储字符，若不是“版本任你更，我用 Java 8”的钉子户，应该能发现从 JDK 9 开始，它就变成了 <code>byte[] value</code>。这么做的目的主要是为了<strong>减少字符串占用的内存，减少 GC 次数</strong>。（详见参考资料<a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">JEP 254</a>）</p>
 <p>以下是笔者在本地启动的同一 Java 服务在 JDK 8/11 两个版本的堆内存统计情况，能看到 String 的实例数量和内存占用均名列前茅。并且在 JDK 8 版本中，由于 String 还是使用 <code>char[]</code> 存储内容，<code>char[]</code> 内存占用高居第一，而到了 JDK 11 优化为 <code>byte[]</code> 后，<code>char[]</code> 的内存占用就被打下去了，优化效果一目了然。</p>
 <figure><figcaption>JDK8-String 实例内存占用示例</figcaption></figure>
 <figure><figcaption>JDK11-String 实例内存占用示例</figcaption></figure>
